@@ -1,12 +1,16 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
-  "organizeImports": {
-    "enabled": true
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "preset": "recommended"
     }
   },
   "formatter": {
@@ -22,12 +26,18 @@
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      ".next",
-      "dist",
-      "coverage",
-      "drizzle/meta"
+    "includes": [
+      "src/**",
+      "scripts/**",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.json",
+      "!!**/node_modules",
+      "!!**/.next",
+      "!!**/dist",
+      "!!**/coverage",
+      "!!**/drizzle/meta"
     ]
   }
 }

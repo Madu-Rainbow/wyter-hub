@@ -2,6 +2,7 @@
   "name": "wyter-hub",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Sistema de gestão interna da Wyter Consultoria",
   "scripts": {
     "dev": "next dev --turbopack",
@@ -22,14 +23,19 @@
   "license": "UNLICENSED",
   "packageManager": "pnpm@10.4.1",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "lefthook"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lefthook"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.2",
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
+    "@types/node": "^26.6.5",
     "lefthook": "^2.2.2",
     "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   }
 }

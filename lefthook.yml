@@ -9,7 +9,7 @@ pre-commit:
       run: pnpm tsc --noEmit
 
     - name: gitleaks
-      run: gitleaks git --pre-commit --no-banner
+      run: gitleaks protect --staged --no-banner
 
 commit-msg:
   jobs:

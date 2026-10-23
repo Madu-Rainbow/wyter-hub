@@ -11,8 +11,10 @@ Atualizado em: 23/10/2026
 | pnpm | 10.4.1 | corepack |
 | Python | 3.12.3 | já instalado |
 | uv | 0.13.5 | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| Docker | pendente | `sudo apt install docker.io docker-compose-v2` |
-| gh (GitHub CLI) | pendente | `sudo apt install gh` |
+| Docker | 29.1.3 | `sudo apt install docker.io docker-compose-v2` |
+| Docker Compose | 2.40.3 | junto com docker |
+| gh (GitHub CLI) | 2.45.0 | `sudo apt install gh` |
+| PostgreSQL | 16.15 | nativo (apt), banco `wyter_hub` criado |
 
 ## Economia de tokens
 
