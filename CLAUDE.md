@@ -14,7 +14,8 @@ Convive com ferramentas atuais até corte gradual por cliente.
 ## Estrutura
 ```
 src/
-  front/        → UI: app/, components/, hooks/, lib/, styles/
+  app/          → Rotas Next.js (App Router) — onde o Next.js procura
+  front/        → UI: components/, hooks/, lib/, styles/
   back/         → Servidor: db/, services/, auth/, jobs/, mcp/, importadores/, api/
   shared/       → Schemas Zod, types, utils, constantes
 docs/           → Documentação (ferramentas, design, IHC, migração, roadmap)

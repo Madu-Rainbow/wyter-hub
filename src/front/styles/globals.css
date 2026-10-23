@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  /* Cores — Seção 8: "parecer de banco" */
+  --color-bg: #f7f7f5;
+  --color-surface: #ffffff;
+  --color-text: #0e1726;
+  --color-text-muted: #5a6578;
+  --color-border: #e2e4e8;
+  --color-accent: #1b2a4a;
+  --color-accent-hover: #253a66;
+  --color-danger: #b91c1c;
+  --color-danger-hover: #991b1b;
+  --color-warning: #d97706;
+  --color-success: #15803d;
+
+  /* Tipografia */
+  --font-title: "Source Serif 4", "Georgia", serif;
+  --font-body: "Inter", "system-ui", sans-serif;
+
+  /* Escala tipográfica */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-lg: 1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.75rem;
+
+  /* Espaçamento (grid de 8px) */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+
+  /* Bordas */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings:
+      "tnum" on,
+      "lnum" on;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-title);
+    font-weight: 600;
+  }
+}
