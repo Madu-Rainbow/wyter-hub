@@ -1,50 +1,59 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Wyter Hub Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Visão Única
+Qualquer pessoa vê, numa tela, tudo o que é dela, de qualquer cliente. O diretor vê tudo de todos. Nenhuma informação relevante deve exigir trocar de ferramenta ou abrir múltiplas telas para ser encontrada.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Registro é Cidadão de Primeira Classe
+Toda ação relevante gera um evento imutável (append-only). Nada some; correções são novos eventos com referência ao original. O log de eventos é a fonte de verdade auditável do sistema.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Pronto para IA desde o Dia 1
+Eventos, logs, registros diários e o dossiê do cliente têm estrutura estável e legível por máquina (schemas Zod compartilhados). Toda entidade exposta por MCP e por UI usa os mesmos schemas. O sistema alimenta relatórios e agentes sem transformação manual.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Sem Ruptura
+Até o corte final, Trello, Drive e Gmail continuam funcionando. O Hub convive em 3 fases: Espelho (importa e mostra) → Escrita Dupla (nasce no Hub, replica para ferramentas) → Hub é a Verdade (ferramentas externas em somente leitura/arquivadas). O corte de cada cliente é decisão do diretor.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Aprovação Explícita
+O que depende do diretor passa por um fluxo de aprovação com 3 campos obrigatórios: (1) situação atual que justifica, (2) risco se não fizer, (3) exige manutenção futura? O sistema nunca envia e-mail sozinho — só cria rascunhos. Nada é decidido sem o Wender.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Privacidade (LGPD)
+Dados pessoais de clientes de clientes (CPF, endereço, dados de processos) ficam criptografados em coluna, com acesso controlado por papel e trilha de auditoria de quem viu/exportou. Nunca vão para IA sem mascaramento prévio.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### VII. Leve e Rápido
+Código mínimo (YAGNI), poucas dependências. Server Components por padrão, JavaScript de cliente só onde há interação. Listas virtualizadas. LCP < 2s, INP < 200ms com 1.000 tarefas. Orçamento de ~200KB de JS por rota.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### VIII. Parecer de Banco, Não de IA
+Design sóbrio: fundo off-white #F7F7F5, texto quase-preto #0E1726, acento azul-marinho. Sem gradientes, glassmorphism, emojis na UI, ícones de brilho/estrela. Tipografia serifada nos títulos, sans nos dados com algarismos tabulares. Microtexto direto e profissional.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Regras de Negócio do Diretor
+
+- Nada é decidido sem o Wender; o que depende dele vira pedido de aprovação.
+- Priorização "fruta do pé mais próxima": o mais urgente e mais fácil de colher primeiro.
+- Backup antes de qualquer configuração de software/hardware no cliente.
+- O que depende do cliente é alinhado primeiro com o Wender.
+- Todo pedido de investimento precisa das 3 respostas da aprovação + custo.
+
+## Localização e Padrões
+
+- Fuso: America/Cuiaba. Moeda: BRL. Datas: DD/MM/AAAA na UI, ISO no banco.
+- Idioma: PT-BR na interface. Commits em inglês (Conventional Commits), descrição PT-BR.
+- Papéis: diretor > consultor > analista > convidado (futuro: cliente).
+- Multi-tenant simples por org_id (preparar, não implementar completo na MVP).
+
+## Segurança e Operação
+
+- Segredos só em .env (nunca no git). OAuth com escopos mínimos.
+- Gmail: somente leitura + criação de rascunho. Drive: leitura + escrita só nos logs.
+- Backups do Postgres diários.
+- Classificar e criptografar campos sensíveis (LGPD).
+- Mascarar dados antes de enviar qualquer coisa para IA.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- Esta constituição é inegociável e sobrepõe qualquer outra decisão de implementação.
+- Alterações requerem aprovação do Ariel (consultor) e do Wender (diretor).
+- Toda spec e toda PR devem verificar aderência a estes princípios.
+- Em caso de dúvida, o princípio mais restritivo prevalece.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-10-23
