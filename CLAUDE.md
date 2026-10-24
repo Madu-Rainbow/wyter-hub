@@ -4,55 +4,64 @@
 Sistema interno que substitui Trello + Drive + Gmail + Claude na gestão da Wyter Consultoria (Cuiabá-MT).
 Convive com ferramentas atuais até corte gradual por cliente.
 
+## Arquitetura
+**Front → Supabase → Edge Functions** (sem backend Node direto).
+O front faz queries direto no Supabase via anon key; RLS protege os dados por org e papel.
+Edge Functions para lógica complexa. MCP no Supabase para integração com Claude dos consultores.
+
 ## Stack
-- **Front:** Next.js (App Router, RSC), TypeScript estrito, Tailwind CSS, shadcn/ui, TanStack Table/Virtual, React Hook Form + Zod, date-fns pt-BR, cmdk, Recharts
-- **Back:** PostgreSQL (Docker), Drizzle ORM, Better Auth (Google OAuth), pg-boss (filas)
-- **Shared:** Schemas Zod compartilhados front/back/MCP em `src/shared/schemas/`
+- **Front:** Next.js 16 (App Router, RSC), TypeScript estrito, Tailwind CSS 4, shadcn/ui, Zod, date-fns pt-BR
+- **Backend:** Supabase (PostgreSQL + Auth + RLS + Edge Functions + Storage)
+- **Auth:** Supabase Auth com Google OAuth, emails autorizados, papéis via tabela `pessoa`
+- **Shared:** Schemas Zod em `src/shared/schemas/`, tipos gerados por `supabase gen types`
 - **Testes:** Vitest (unit), Playwright (E2E)
 - **Lint/Format:** Biome
 
 ## Estrutura
 ```
 src/
-  app/          → Rotas Next.js (App Router) — onde o Next.js procura
-  front/        → UI: components/, hooks/, lib/, styles/
-  back/         → Servidor: db/, services/, auth/, jobs/, mcp/, importadores/, api/
-  shared/       → Schemas Zod, types, utils, constantes
-docs/           → Documentação (ferramentas, design, IHC, migração, roadmap)
-specs/          → Especificações do Spec Kit
-scripts/        → Automação (git-auto.mjs, seeds, etc.)
+  app/          → Rotas Next.js (App Router)
+  front/        → UI: components/, hooks/, lib/ (supabase client), styles/
+  shared/       → Schemas Zod, types (incl. supabase.ts gerado), utils, constantes
+supabase/
+  migrations/   → SQL migrations (schema + RLS)
+  functions/    → Edge Functions (Deno)
+  config.toml   → Config do Supabase CLI
+docs/           → Documentação
+specs/          → Especificações
+scripts/        → Automação
 tests/          → unit/ e e2e/
 ```
 
 ## Comandos
 ```bash
-pnpm dev          # servidor de desenvolvimento
-pnpm build        # build de produção
-pnpm test         # vitest
-pnpm test:e2e     # playwright
-pnpm lint         # biome check
-pnpm db:migrate   # drizzle migrations
-pnpm db:seed      # dados fictícios
-pnpm db:studio    # drizzle studio
+pnpm dev                  # servidor de desenvolvimento
+pnpm build                # build de produção
+pnpm test                 # vitest
+pnpm lint                 # biome check
+supabase db push          # push migrations para remoto
+supabase db reset         # reset local
+supabase gen types typescript --project-id rnfgzsdsetitvwbvrafz > src/shared/types/supabase.ts
+supabase functions serve   # edge functions local
 ```
 
 ## Convenções
 - Idioma: PT-BR na interface. Commits em inglês (Conventional Commits), descrição PT-BR.
 - Fuso: America/Cuiaba. Moeda: BRL. Datas: DD/MM/AAAA na UI, ISO no banco.
 - Escopos de commit: `feat(tarefas)`, `fix(relatorio)`, `chore(deps)`, etc.
-- Rodapé do commit: `Refs: T0xx` (ID da tarefa Spec Kit).
-- Schemas Zod em `src/shared/schemas/` — mesmos no front, back e MCP.
+- Schemas Zod em `src/shared/schemas/` — mesmos no front e edge functions.
 - Server Components por padrão; Client Components só com interação.
-- Listas virtualizadas para >50 itens.
 - Nunca subir segredos no git. `.env` no `.gitignore`.
 - Nunca enviar e-mail automaticamente — só criar rascunhos.
+- RLS habilitado em TODAS as tabelas. Usar `my_org_id()` e `my_papel()` nas policies.
+- Supabase client: `getUser()` (valida no servidor) em vez de `getSession()` para auth checks.
 
 ## Specs (Spec Kit)
 ```
-001-nucleo       → modelo de dados, auth, permissões
+001-nucleo       → modelo de dados, auth, permissões, RLS
 002-visoes       → árvore, lista, kanban, gantt, minhas tarefas
 003-registro     → logs diários, fechar o dia, rascunho e-mail
-004-ponte-claude → servidor MCP
+004-ponte-claude → MCP no Supabase para Claude dos consultores
 005-importadores → Trello, Drive, Gmail
 006-painel       → dashboards diretoria, carga, aprovações
 007-contratos    → contratos, aditivos, escopos extras
@@ -62,16 +71,19 @@ pnpm db:studio    # drizzle studio
 Sóbrio: fundo off-white `#F7F7F5`, texto `#0E1726`, acento azul-marinho.
 Sem gradientes, glassmorphism, emojis na UI, ícones de IA.
 Tipografia: serifada nos títulos, sans nos dados. Algarismos tabulares.
-Detalhes em `docs/design.md`.
 
 ## Segurança
-- LGPD: campos sensíveis (CPF, endereço, dados processuais) criptografados.
+- LGPD: campos sensíveis criptografados via Supabase Vault ou column encryption.
 - Mascarar dados antes de enviar para IA.
-- OAuth com escopos mínimos.
-- Backups diários do Postgres.
+- RLS em todas as tabelas. service_role NUNCA no cliente.
+- Supabase Auth com emails autorizados.
+
+## Eventos/Logs
+- Tabela `evento` é append-only (sem UPDATE/DELETE).
+- Logs contextuais: `cliente_id` e `projeto_id` no evento.
+- Cada cliente e projeto tem seu contexto de logs.
 
 ## Economia de tokens
 - Ler arquivos por trecho, não inteiros.
 - Explorações amplas → subagentes.
-- Uma tarefa por vez no Spec Kit.
-- `rtk gain` e Caveman stats ao fim de cada fase → `docs/economia-tokens.md`.
+- `rtk gain` e Caveman stats ao fim de cada fase.

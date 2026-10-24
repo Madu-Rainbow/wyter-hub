@@ -1,21 +1,47 @@
 "use client";
 
-import { signIn } from "@front/lib/auth-client.js";
-import { useSearchParams } from "next/navigation";
+import { createClient } from "@front/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const router = useRouter();
   const error = searchParams.get("error");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(
+    error === "unauthorized"
+      ? "E-mail não autorizado. Entre em contato com a diretoria."
+      : error
+        ? "Erro ao fazer login. Tente novamente."
+        : "",
+  );
 
-  async function handleLogin() {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
-    await signIn.social({
-      provider: "google",
-      callbackURL: callbackUrl,
+    setErrorMsg("");
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
     });
+
+    if (authError) {
+      setErrorMsg(
+        authError.message === "Invalid login credentials"
+          ? "E-mail ou senha incorretos."
+          : authError.message,
+      );
+      setLoading(false);
+      return;
+    }
+
+    router.push("/painel");
+    router.refresh();
   }
 
   return (
@@ -26,22 +52,53 @@ export default function LoginPage() {
           Sistema de gestão da Wyter Consultoria
         </p>
 
-        {error && (
+        {errorMsg && (
           <div className="mb-4 rounded-md border border-danger/20 bg-danger/5 p-3 text-center text-sm text-danger">
-            {error === "unauthorized"
-              ? "E-mail não autorizado. Entre em contato com a diretoria."
-              : "Erro ao fazer login. Tente novamente."}
+            {errorMsg}
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-        >
-          {loading ? "Entrando..." : "Entrar com Google"}
-        </button>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-text">
+              E-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="seu@email.com"
+              className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="senha" className="mb-1 block text-sm font-medium text-text">
+              Senha
+            </label>
+            <input
+              id="senha"
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="••••••••"
+              className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+          >
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
 
         <p className="mt-4 text-center text-xs text-text-muted">
           Acesso restrito a membros autorizados da Wyter

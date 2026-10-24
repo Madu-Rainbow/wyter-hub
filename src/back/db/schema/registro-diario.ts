@@ -25,7 +25,7 @@ export const registroDiario = pgTable("registro_diario", {
   oQueSubi: text("o_que_subi"),
   oQueDescobri: text("o_que_descobri"),
   pendencias: jsonb(),
-  precisaAprovacao: text("precisa_aprovacao"),
+  precisaAprovacao: boolean("precisa_aprovacao").notNull().default(false),
   treinamentoDiretoria: treinamentoEnum("treinamento_diretoria"),
   trava: text(),
   pedidoAoCliente: text("pedido_ao_cliente"),

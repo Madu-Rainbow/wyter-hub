@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cores — Seção 8: "parecer de banco" */
+  /* Wyter — "parecer de banco" */
   --color-bg: #f7f7f5;
   --color-surface: #ffffff;
   --color-text: #0e1726;
@@ -14,11 +14,34 @@
   --color-warning: #d97706;
   --color-success: #15803d;
 
-  /* Tipografia */
+  /* shadcn/ui tokens mapeados ao tema Wyter */
+  --color-background: #f7f7f5;
+  --color-foreground: #0e1726;
+  --color-card: #ffffff;
+  --color-card-foreground: #0e1726;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0e1726;
+  --color-primary: #1b2a4a;
+  --color-primary-foreground: #f7f7f5;
+  --color-secondary: #eef0f3;
+  --color-secondary-foreground: #0e1726;
+  --color-muted: #eef0f3;
+  --color-muted-foreground: #5a6578;
+  --color-accent-foreground: #f7f7f5;
+  --color-destructive: #b91c1c;
+  --color-input: #e2e4e8;
+  --color-ring: #1b2a4a;
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #0e1726;
+  --color-sidebar-border: #e2e4e8;
+  --color-sidebar-accent: #eef0f3;
+  --color-sidebar-accent-foreground: #0e1726;
+  --color-sidebar-ring: #1b2a4a;
+
   --font-title: "Source Serif 4", "Georgia", serif;
   --font-body: "Inter", "system-ui", sans-serif;
+  --font-sans: "Inter", "system-ui", sans-serif;
 
-  /* Escala tipográfica */
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
   --text-base: 0.875rem;
@@ -26,7 +49,6 @@
   --text-xl: 1.25rem;
   --text-2xl: 1.75rem;
 
-  /* Espaçamento (grid de 8px) */
   --spacing-1: 0.25rem;
   --spacing-2: 0.5rem;
   --spacing-3: 0.75rem;
@@ -34,12 +56,15 @@
   --spacing-6: 1.5rem;
   --spacing-8: 2rem;
 
-  /* Bordas */
   --radius-sm: 4px;
   --radius-md: 6px;
+  --radius: 6px;
 }
 
 @layer base {
+  html {
+    font-size: clamp(13px, 0.35vw + 9.5px, 16px);
+  }
   body {
     font-family: var(--font-body);
     font-size: var(--text-base);

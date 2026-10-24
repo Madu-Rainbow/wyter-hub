@@ -12,7 +12,7 @@ export const aditivo = pgTable("aditivo", {
     .references(() => contrato.id),
   data: date().notNull(),
   motivo: text().notNull(),
-  impactoValor: numeric("impacto_valor"),
+  impactoValor: text("impacto_valor"),
   impactoPrazo: text("impacto_prazo"),
   impactoEscopo: text("impacto_escopo"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

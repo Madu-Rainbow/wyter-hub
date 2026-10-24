@@ -1,0 +1,1 @@
+ALTER TABLE "aditivo" ALTER COLUMN "impacto_valor" SET DATA TYPE text;
