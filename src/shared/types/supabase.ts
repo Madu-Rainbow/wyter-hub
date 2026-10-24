@@ -68,7 +68,9 @@ export type Database = {
       };
       anexo: {
         Row: {
+          autor_id: string | null;
           created_at: string;
+          eh_arquivo: boolean;
           entidade_id: string;
           entidade_tipo: string;
           id: string;
@@ -79,7 +81,9 @@ export type Database = {
           url_ou_caminho: string;
         };
         Insert: {
+          autor_id?: string | null;
           created_at?: string;
+          eh_arquivo?: boolean;
           entidade_id: string;
           entidade_tipo: string;
           id?: string;
@@ -90,7 +94,9 @@ export type Database = {
           url_ou_caminho: string;
         };
         Update: {
+          autor_id?: string | null;
           created_at?: string;
+          eh_arquivo?: boolean;
           entidade_id?: string;
           entidade_tipo?: string;
           id?: string;
@@ -101,6 +107,13 @@ export type Database = {
           url_ou_caminho?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "anexo_autor_id_fkey";
+            columns: ["autor_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "anexo_org_id_fkey";
             columns: ["org_id"];
@@ -193,6 +206,106 @@ export type Database = {
           },
         ];
       };
+      checklist: {
+        Row: {
+          created_at: string;
+          id: string;
+          org_id: string;
+          pos: number;
+          tarefa_id: string;
+          titulo: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          org_id: string;
+          pos?: number;
+          tarefa_id: string;
+          titulo?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          org_id?: string;
+          pos?: number;
+          tarefa_id?: string;
+          titulo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "checklist_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "checklist_tarefa_id_fkey";
+            columns: ["tarefa_id"];
+            isOneToOne: false;
+            referencedRelation: "tarefa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      checklist_item: {
+        Row: {
+          checklist_id: string;
+          created_at: string;
+          feito: boolean;
+          id: string;
+          org_id: string;
+          pos: number;
+          prazo: string | null;
+          responsavel_id: string | null;
+          texto: string;
+        };
+        Insert: {
+          checklist_id: string;
+          created_at?: string;
+          feito?: boolean;
+          id?: string;
+          org_id: string;
+          pos?: number;
+          prazo?: string | null;
+          responsavel_id?: string | null;
+          texto: string;
+        };
+        Update: {
+          checklist_id?: string;
+          created_at?: string;
+          feito?: boolean;
+          id?: string;
+          org_id?: string;
+          pos?: number;
+          prazo?: string | null;
+          responsavel_id?: string | null;
+          texto?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "checklist_item_checklist_id_fkey";
+            columns: ["checklist_id"];
+            isOneToOne: false;
+            referencedRelation: "checklist";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "checklist_item_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "checklist_item_responsavel_id_fkey";
+            columns: ["responsavel_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cliente: {
         Row: {
           cidade: string | null;
@@ -267,8 +380,10 @@ export type Database = {
           autor_id: string;
           created_at: string;
           deleted_at: string | null;
+          editado_em: string | null;
           id: string;
           org_id: string;
+          parent_id: string | null;
           tarefa_id: string;
           texto: string;
           updated_at: string;
@@ -277,8 +392,10 @@ export type Database = {
           autor_id: string;
           created_at?: string;
           deleted_at?: string | null;
+          editado_em?: string | null;
           id?: string;
           org_id: string;
+          parent_id?: string | null;
           tarefa_id: string;
           texto: string;
           updated_at?: string;
@@ -287,8 +404,10 @@ export type Database = {
           autor_id?: string;
           created_at?: string;
           deleted_at?: string | null;
+          editado_em?: string | null;
           id?: string;
           org_id?: string;
+          parent_id?: string | null;
           tarefa_id?: string;
           texto?: string;
           updated_at?: string;
@@ -309,10 +428,100 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "comentario_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "comentario";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "comentario_tarefa_id_fkey";
             columns: ["tarefa_id"];
             isOneToOne: false;
             referencedRelation: "tarefa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      comentario_mencao: {
+        Row: {
+          comentario_id: string;
+          org_id: string;
+          pessoa_id: string;
+        };
+        Insert: {
+          comentario_id: string;
+          org_id: string;
+          pessoa_id: string;
+        };
+        Update: {
+          comentario_id?: string;
+          org_id?: string;
+          pessoa_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comentario_mencao_comentario_id_fkey";
+            columns: ["comentario_id"];
+            isOneToOne: false;
+            referencedRelation: "comentario";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comentario_mencao_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comentario_mencao_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      comentario_reacao: {
+        Row: {
+          comentario_id: string;
+          emoji: string;
+          org_id: string;
+          pessoa_id: string;
+        };
+        Insert: {
+          comentario_id: string;
+          emoji: string;
+          org_id: string;
+          pessoa_id: string;
+        };
+        Update: {
+          comentario_id?: string;
+          emoji?: string;
+          org_id?: string;
+          pessoa_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comentario_reacao_comentario_id_fkey";
+            columns: ["comentario_id"];
+            isOneToOne: false;
+            referencedRelation: "comentario";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comentario_reacao_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comentario_reacao_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
             referencedColumns: ["id"];
           },
         ];
@@ -575,6 +784,7 @@ export type Database = {
           email: string;
           id: string;
           org_id: string;
+          pessoa_id: string | null;
         };
         Insert: {
           adicionado_por_id?: string | null;
@@ -582,6 +792,7 @@ export type Database = {
           email: string;
           id?: string;
           org_id: string;
+          pessoa_id?: string | null;
         };
         Update: {
           adicionado_por_id?: string | null;
@@ -589,6 +800,7 @@ export type Database = {
           email?: string;
           id?: string;
           org_id?: string;
+          pessoa_id?: string | null;
         };
         Relationships: [
           {
@@ -603,6 +815,13 @@ export type Database = {
             columns: ["org_id"];
             isOneToOne: false;
             referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_autorizado_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
             referencedColumns: ["id"];
           },
         ];
@@ -721,6 +940,48 @@ export type Database = {
             columns: ["org_id"];
             isOneToOne: false;
             referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      etiqueta: {
+        Row: {
+          cor: string;
+          created_at: string;
+          id: string;
+          nome: string;
+          org_id: string;
+          projeto_id: string | null;
+        };
+        Insert: {
+          cor?: string;
+          created_at?: string;
+          id?: string;
+          nome: string;
+          org_id: string;
+          projeto_id?: string | null;
+        };
+        Update: {
+          cor?: string;
+          created_at?: string;
+          id?: string;
+          nome?: string;
+          org_id?: string;
+          projeto_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "etiqueta_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "etiqueta_projeto_id_fkey";
+            columns: ["projeto_id"];
+            isOneToOne: false;
+            referencedRelation: "projeto";
             referencedColumns: ["id"];
           },
         ];
@@ -1196,7 +1457,9 @@ export type Database = {
       };
       tarefa: {
         Row: {
+          arquivada_em: string | null;
           bloqueada_por_id: string | null;
+          capa_anexo_id: string | null;
           categoria: string | null;
           checklist: Json | null;
           created_at: string;
@@ -1204,14 +1467,18 @@ export type Database = {
           data_prazo: string | null;
           deleted_at: string | null;
           descricao: string | null;
+          entregue_em: string | null;
           esforco: number;
           estimativa_horas: number | null;
           id: string;
+          lembrete_em: string | null;
           link_externo: string | null;
+          n_anexos: number;
           numero: number;
           org_id: string;
           origem: Database["public"]["Enums"]["origem"];
           parent_id: string | null;
+          prazo_hora: string | null;
           prioridade: Database["public"]["Enums"]["prioridade"];
           projeto_id: string;
           responsavel_id: string | null;
@@ -1221,7 +1488,9 @@ export type Database = {
           urgencia: number;
         };
         Insert: {
+          arquivada_em?: string | null;
           bloqueada_por_id?: string | null;
+          capa_anexo_id?: string | null;
           categoria?: string | null;
           checklist?: Json | null;
           created_at?: string;
@@ -1229,14 +1498,18 @@ export type Database = {
           data_prazo?: string | null;
           deleted_at?: string | null;
           descricao?: string | null;
+          entregue_em?: string | null;
           esforco?: number;
           estimativa_horas?: number | null;
           id?: string;
+          lembrete_em?: string | null;
           link_externo?: string | null;
+          n_anexos?: number;
           numero: number;
           org_id: string;
           origem?: Database["public"]["Enums"]["origem"];
           parent_id?: string | null;
+          prazo_hora?: string | null;
           prioridade?: Database["public"]["Enums"]["prioridade"];
           projeto_id: string;
           responsavel_id?: string | null;
@@ -1246,7 +1519,9 @@ export type Database = {
           urgencia?: number;
         };
         Update: {
+          arquivada_em?: string | null;
           bloqueada_por_id?: string | null;
+          capa_anexo_id?: string | null;
           categoria?: string | null;
           checklist?: Json | null;
           created_at?: string;
@@ -1254,14 +1529,18 @@ export type Database = {
           data_prazo?: string | null;
           deleted_at?: string | null;
           descricao?: string | null;
+          entregue_em?: string | null;
           esforco?: number;
           estimativa_horas?: number | null;
           id?: string;
+          lembrete_em?: string | null;
           link_externo?: string | null;
+          n_anexos?: number;
           numero?: number;
           org_id?: string;
           origem?: Database["public"]["Enums"]["origem"];
           parent_id?: string | null;
+          prazo_hora?: string | null;
           prioridade?: Database["public"]["Enums"]["prioridade"];
           projeto_id?: string;
           responsavel_id?: string | null;
@@ -1271,6 +1550,13 @@ export type Database = {
           urgencia?: number;
         };
         Relationships: [
+          {
+            foreignKeyName: "tarefa_capa_fk";
+            columns: ["capa_anexo_id"];
+            isOneToOne: false;
+            referencedRelation: "anexo";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "tarefa_org_id_fkey";
             columns: ["org_id"];
@@ -1297,6 +1583,166 @@ export type Database = {
             columns: ["responsavel_id"];
             isOneToOne: false;
             referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tarefa_etiqueta: {
+        Row: {
+          etiqueta_id: string;
+          org_id: string;
+          tarefa_id: string;
+        };
+        Insert: {
+          etiqueta_id: string;
+          org_id: string;
+          tarefa_id: string;
+        };
+        Update: {
+          etiqueta_id?: string;
+          org_id?: string;
+          tarefa_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_etiqueta_etiqueta_id_fkey";
+            columns: ["etiqueta_id"];
+            isOneToOne: false;
+            referencedRelation: "etiqueta";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_etiqueta_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_etiqueta_tarefa_id_fkey";
+            columns: ["tarefa_id"];
+            isOneToOne: false;
+            referencedRelation: "tarefa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tarefa_membro: {
+        Row: {
+          org_id: string;
+          pessoa_id: string;
+          tarefa_id: string;
+        };
+        Insert: {
+          org_id: string;
+          pessoa_id: string;
+          tarefa_id: string;
+        };
+        Update: {
+          org_id?: string;
+          pessoa_id?: string;
+          tarefa_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_membro_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_membro_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_membro_tarefa_id_fkey";
+            columns: ["tarefa_id"];
+            isOneToOne: false;
+            referencedRelation: "tarefa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tarefa_seguidor: {
+        Row: {
+          org_id: string;
+          pessoa_id: string;
+          tarefa_id: string;
+        };
+        Insert: {
+          org_id: string;
+          pessoa_id: string;
+          tarefa_id: string;
+        };
+        Update: {
+          org_id?: string;
+          pessoa_id?: string;
+          tarefa_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_seguidor_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_seguidor_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_seguidor_tarefa_id_fkey";
+            columns: ["tarefa_id"];
+            isOneToOne: false;
+            referencedRelation: "tarefa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tarefa_voto: {
+        Row: {
+          org_id: string;
+          pessoa_id: string;
+          tarefa_id: string;
+        };
+        Insert: {
+          org_id: string;
+          pessoa_id: string;
+          tarefa_id: string;
+        };
+        Update: {
+          org_id?: string;
+          pessoa_id?: string;
+          tarefa_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_voto_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_voto_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tarefa_voto_tarefa_id_fkey";
+            columns: ["tarefa_id"];
+            isOneToOne: false;
+            referencedRelation: "tarefa";
             referencedColumns: ["id"];
           },
         ];
@@ -1409,6 +1855,15 @@ export type Database = {
           p_depois: Json;
           p_verbo: string;
           t: Database["public"]["Tables"]["tarefa"]["Row"];
+        };
+        Returns: undefined;
+      };
+      log_evento_tarefa_id: {
+        Args: {
+          p_antes: Json;
+          p_depois: Json;
+          p_tarefa: string;
+          p_verbo: string;
         };
         Returns: undefined;
       };
