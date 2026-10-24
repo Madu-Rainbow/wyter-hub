@@ -1,10 +1,6 @@
-"use client";
-
 import { createClient } from "@front/lib/supabase/client";
-import { useEffect, useState } from "react";
-import { fmtDataHora } from "./comentarios-tab";
 
-type Ev = {
+export type Ev = {
   id: string;
   quando: string;
   verbo: string;
@@ -22,59 +18,69 @@ const CAMPOS: Record<string, string> = {
   esforco: "esforço",
   data_prazo: "prazo",
   data_inicio: "início",
+  prazo_hora: "hora da entrega",
+  lembrete_em: "lembrete",
   estimativa_horas: "estimativa",
   responsavel_id: "responsável",
   categoria: "categoria",
   bloqueada_por_id: "bloqueio",
   link_externo: "link",
-  checklist: "checklist",
+  projeto_id: "projeto",
 };
+const SEM_VALOR = new Set([
+  "descricao",
+  "responsavel_id",
+  "bloqueada_por_id",
+  "projeto_id",
+  "lembrete_em",
+]);
 
-function resumo(e: Ev) {
-  if (!e.depois) return "";
-  if (e.verbo === "comentou") return "";
-  return Object.keys(e.depois)
+const VERBOS: Record<string, string> = {
+  adicionou_membro: "adicionou o membro",
+  removeu_membro: "removeu o membro",
+  aplicou_etiqueta: "aplicou a etiqueta",
+  removeu_etiqueta: "removeu a etiqueta",
+  anexou: "anexou",
+  removeu_anexo: "removeu o anexo",
+  criou_checklist: "criou a checklist",
+  removeu_checklist: "removeu a checklist",
+  marcou_item: "marcou o item",
+  desmarcou_item: "desmarcou o item",
+  editou_comentario: "editou um comentário",
+  excluiu_comentario: "excluiu um comentário",
+  marcou_entrega: "marcou como entregue",
+  desmarcou_entrega: "desmarcou a entrega",
+  definiu_capa: "definiu a capa",
+  removeu_capa: "removeu a capa",
+  definiu_lembrete: "definiu o lembrete",
+  removeu_lembrete: "removeu o lembrete",
+  moveu_projeto: "moveu para outro projeto",
+};
+export const rotuloVerbo = (v: string) => VERBOS[v] ?? v;
+
+export function resumoEvento(e: Ev) {
+  if (!e.depois || e.verbo === "comentou") return "";
+  const d = e.depois;
+  const nome = d.membro ?? d.etiqueta ?? d.arquivo ?? d.checklist ?? d.item;
+  if (typeof nome === "string") return nome;
+  return Object.keys(d)
     .map((k) => {
-      if (
-        k === "checklist" ||
-        k === "descricao" ||
-        k === "responsavel_id" ||
-        k === "bloqueada_por_id"
-      )
-        return CAMPOS[k] ?? k;
+      if (k === "campo") return String(d[k]);
+      if (SEM_VALOR.has(k)) return CAMPOS[k] ?? k;
       const a = e.antes?.[k];
-      const d = e.depois?.[k];
-      return `${CAMPOS[k] ?? k}${a != null && a !== "" ? `: ${String(a)}` : ""} → ${d == null || d === "" ? "vazio" : String(d)}`;
+      const v = d[k];
+      return `${CAMPOS[k] ?? k}${a != null && a !== "" ? `: ${String(a)}` : ""} → ${v == null || v === "" ? "vazio" : String(v)}`;
     })
     .join("; ");
 }
 
-export function AtividadeTab({ tarefaId }: { tarefaId: string }) {
-  const [lista, setLista] = useState<Ev[] | null>(null);
-  useEffect(() => {
-    createClient()
-      .from("evento")
-      .select("id, quando, verbo, antes, depois, quem:quem_id(nome)")
-      .eq("entidade", "tarefa")
-      .eq("entidade_id", tarefaId)
-      .order("quando", { ascending: false })
-      .limit(50)
-      .then(({ data }) => setLista((data ?? []) as unknown as Ev[]));
-  }, [tarefaId]);
-
-  if (lista === null) return <p className="text-sm text-text-muted">Carregando...</p>;
-  if (!lista.length) return <p className="text-sm text-text-muted">Sem atividade registrada.</p>;
-  return (
-    <ul className="space-y-2">
-      {lista.map((e) => (
-        <li key={e.id} className="border-l-2 border-border pl-3 text-sm">
-          <p className="text-text">
-            <span className="font-medium">{e.quem?.nome ?? "—"}</span> {e.verbo}
-          </p>
-          {resumo(e) && <p className="text-xs text-text-muted">{resumo(e)}</p>}
-          <p className="text-xs tabular-nums text-text-muted">{fmtDataHora(e.quando)}</p>
-        </li>
-      ))}
-    </ul>
-  );
+export async function carregarEventos(tarefaId: string): Promise<Ev[]> {
+  const { data } = await createClient()
+    .from("evento")
+    .select("id, quando, verbo, antes, depois, quem:quem_id(nome)")
+    .eq("entidade", "tarefa")
+    .eq("entidade_id", tarefaId)
+    .order("quando", { ascending: false })
+    .limit(100);
+  return (data ?? []) as unknown as Ev[];
 }

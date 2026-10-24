@@ -239,6 +239,14 @@ export function TarefasView({
           />
           Só atrasadas
         </label>
+        <label className="flex items-center gap-1.5 text-sm text-text">
+          <input
+            type="checkbox"
+            checked={filtros.arquivadas}
+            onChange={(e) => set("arquivadas", e.target.checked)}
+          />
+          Arquivadas
+        </label>
         {ctx.meId && (
           <label className="flex items-center gap-1.5 text-sm text-text">
             <input

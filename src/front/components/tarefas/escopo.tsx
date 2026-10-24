@@ -1,4 +1,10 @@
-import type { ChecklistItem, Filtros, Tarefa } from "@front/components/tarefas/shared";
+import type {
+  ChecklistItem,
+  Etiqueta,
+  Filtros,
+  PessoaOpt,
+  Tarefa,
+} from "@front/components/tarefas/shared";
 import { TarefasView } from "@front/components/tarefas/tarefas-view";
 import { carregarArvore } from "@front/lib/arvore";
 import { createSupabaseServer } from "@front/lib/supabase/server";
@@ -15,7 +21,7 @@ export type Escopo = {
 };
 
 const SELECT =
-  "id, titulo, descricao, status, prioridade, urgencia, esforco, responsavel_id, estimativa_horas, data_prazo, data_inicio, categoria, bloqueada_por_id, link_externo, checklist, parent_id, projeto_id, numero, responsavel:responsavel_id(nome), n:comentario(count)";
+  "id, titulo, descricao, status, prioridade, urgencia, esforco, responsavel_id, estimativa_horas, data_prazo, data_inicio, categoria, bloqueada_por_id, link_externo, parent_id, projeto_id, numero, prazo_hora, lembrete_em, entregue_em, arquivada_em, capa_anexo_id, n_anexos, responsavel:responsavel_id(nome), n:comentario(count), cl:checklist(itens:checklist_item(id, texto, feito)), m:tarefa_membro(pessoa:pessoa_id(id, nome)), e:tarefa_etiqueta(etiqueta:etiqueta_id(id, nome, cor)), capa:capa_anexo_id(url_ou_caminho, eh_arquivo)";
 
 /** Tarefas de todos os projetos do escopo (cliente/contrato/projeto) com breadcrumb; kanban/lista/tabela via TarefasView. */
 export async function TarefasDoEscopo({
@@ -79,11 +85,20 @@ export async function TarefasDoEscopo({
   ]);
 
   const lista: Tarefa[] = (tarefas ?? []).map((t) => {
-    const { n, ...resto } = t as unknown as Tarefa & { n: { count: number }[] | null };
+    const { n, cl, m, e, capa, ...resto } = t as unknown as Tarefa & {
+      n: { count: number }[] | null;
+      cl: { itens: ChecklistItem[] }[] | null;
+      m: { pessoa: PessoaOpt | null }[] | null;
+      e: { etiqueta: Etiqueta | null }[] | null;
+      capa: { url_ou_caminho: string; eh_arquivo: boolean } | null;
+    };
     return {
       ...resto,
-      checklist: Array.isArray(resto.checklist) ? (resto.checklist as ChecklistItem[]) : [],
+      checklist: (cl ?? []).flatMap((c) => c.itens),
       n_comentarios: n?.[0]?.count ?? 0,
+      membros: (m ?? []).flatMap((x) => (x.pessoa ? [x.pessoa] : [])),
+      etiquetas: (e ?? []).flatMap((x) => (x.etiqueta ? [x.etiqueta] : [])),
+      capa: capa?.eh_arquivo ? { path: capa.url_ou_caminho } : null,
     };
   });
   const abrir = abrirNumero !== undefined ? lista.find((t) => t.numero === abrirNumero) : undefined;

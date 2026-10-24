@@ -17,8 +17,19 @@ export type Tarefa = {
   categoria: string | null;
   bloqueada_por_id: string | null;
   link_externo: string | null;
+  /** Itens de todas as checklists da tarefa (derivado; edicao em checklist/checklist_item). */
   checklist: ChecklistItem[];
   n_comentarios: number;
+  prazo_hora: string | null;
+  lembrete_em: string | null;
+  entregue_em: string | null;
+  arquivada_em: string | null;
+  capa_anexo_id: string | null;
+  n_anexos: number;
+  membros: PessoaOpt[];
+  etiquetas: Etiqueta[];
+  /** Capa (so arquivo de imagem no bucket anexos). */
+  capa: { path: string } | null;
   responsavel: { nome: string } | null;
   parent_id: string | null;
   projeto_id: string;
@@ -27,6 +38,18 @@ export type Tarefa = {
   chave?: string;
   caminho?: string;
   sub?: { feitas: number; total: number };
+};
+
+export type Etiqueta = { id: string; nome: string; cor: string };
+
+export const COR_ETIQUETA: Record<string, string> = {
+  azul: "bg-blue-100 text-blue-900",
+  verde: "bg-green-100 text-green-900",
+  amarelo: "bg-yellow-100 text-yellow-900",
+  laranja: "bg-orange-100 text-orange-900",
+  vermelho: "bg-red-100 text-red-900",
+  roxo: "bg-purple-100 text-purple-900",
+  cinza: "bg-slate-200 text-slate-800",
 };
 
 export type ProjetoOpt = {
@@ -89,6 +112,7 @@ export type Filtros = {
   minhas: boolean;
   /** "" | "abertas" | um status */
   status: string;
+  arquivadas: boolean;
 };
 
 export const FILTROS_VAZIOS: Filtros = {
@@ -99,6 +123,7 @@ export const FILTROS_VAZIOS: Filtros = {
   atrasadas: false,
   minhas: false,
   status: "",
+  arquivadas: false,
 };
 
 export const FECHADAS = ["concluida", "cancelada"];
@@ -125,6 +150,7 @@ export function filtrar(ts: Tarefa[], f: Filtros, meId: string | null) {
   const q = f.busca.trim().toLowerCase();
   return ts.filter(
     (t) =>
+      (f.arquivadas || !t.arquivada_em) &&
       (!q || t.titulo.toLowerCase().includes(q) || !!t.chave?.toLowerCase().includes(q)) &&
       (!f.responsavel ||
         (f.responsavel === "_none" ? !t.responsavel_id : t.responsavel_id === f.responsavel)) &&

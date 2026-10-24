@@ -1,6 +1,7 @@
 "use client";
 
 import { AdicaoRapida } from "@front/components/tarefas/adicao-rapida";
+import { useCapaUrls } from "@front/components/tarefas/capa";
 import type { Grupo, Tarefa } from "@front/components/tarefas/shared";
 import { prioridadeBorder, TarefaCard } from "@front/components/tarefas/tarefa-card";
 import { DragDropContext, Draggable, Droppable, type DropResult } from "@hello-pangea/dnd";
@@ -20,6 +21,8 @@ export function KanbanBoard({
   onMove: (id: string, destino: string) => void;
   onCreate: (titulo: string, grupoKey: string) => void;
 }) {
+  const capas = useCapaUrls(grupos.flatMap((g) => g.items));
+
   function onDragEnd(r: DropResult) {
     if (!r.destination || r.destination.droppableId === r.source.droppableId) return;
     onMove(r.draggableId, r.destination.droppableId);
@@ -55,7 +58,11 @@ export function KanbanBoard({
                           onKeyDown={(e) => e.key === "Enter" && onOpen(t)}
                           className={`cursor-pointer rounded-md border border-border border-l-4 bg-surface p-3 hover:border-accent/40 ${prioridadeBorder[t.prioridade] ?? "border-l-slate-300"} ${snap.isDragging ? "shadow-md" : ""}`}
                         >
-                          <TarefaCard t={t} bloqueada={bloqueadas.has(t.id)} />
+                          <TarefaCard
+                            t={t}
+                            bloqueada={bloqueadas.has(t.id)}
+                            capaUrl={t.capa ? capas[t.capa.path] : undefined}
+                          />
                         </div>
                       )}
                     </Draggable>
