@@ -1747,6 +1747,63 @@ export type Database = {
           },
         ];
       };
+      token_mcp: {
+        Row: {
+          created_at: string;
+          escopo: string;
+          expira_em: string;
+          id: string;
+          nome: string;
+          org_id: string;
+          pessoa_id: string;
+          prefixo: string;
+          revogado_em: string | null;
+          token_hash: string;
+          ultimo_uso_em: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          escopo?: string;
+          expira_em: string;
+          id?: string;
+          nome: string;
+          org_id: string;
+          pessoa_id: string;
+          prefixo: string;
+          revogado_em?: string | null;
+          token_hash: string;
+          ultimo_uso_em?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          escopo?: string;
+          expira_em?: string;
+          id?: string;
+          nome?: string;
+          org_id?: string;
+          pessoa_id?: string;
+          prefixo?: string;
+          revogado_em?: string | null;
+          token_hash?: string;
+          ultimo_uso_em?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "token_mcp_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "token_mcp_pessoa_id_fkey";
+            columns: ["pessoa_id"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       contrato_andamento: {
@@ -1818,6 +1875,10 @@ export type Database = {
         };
         Returns: string;
       };
+      criar_token_mcp: {
+        Args: { p_dias?: number; p_escopo?: string; p_nome: string };
+        Returns: string;
+      };
       dw_eventos: {
         Args: {
           p_ate?: string;
@@ -1867,10 +1928,39 @@ export type Database = {
         };
         Returns: undefined;
       };
+      mcp_auditar: {
+        Args: {
+          p_escopo: string;
+          p_ferramenta: string;
+          p_ms: number;
+          p_ok: boolean;
+          p_token: string;
+        };
+        Returns: undefined;
+      };
+      mcp_checar_taxa: {
+        Args: { p_token: string };
+        Returns: {
+          ultimo_dia: number;
+          ultimo_minuto: number;
+        }[];
+      };
+      mcp_validar_token: {
+        Args: { p_hash: string };
+        Returns: {
+          auth_user_id: string;
+          escopo: string;
+          org_id: string;
+          papel: Database["public"]["Enums"]["papel"];
+          pessoa_id: string;
+          token_id: string;
+        }[];
+      };
       my_org_id: { Args: never; Returns: string };
       my_papel: { Args: never; Returns: Database["public"]["Enums"]["papel"] };
       revelar_sensivel: { Args: { p_id: string }; Returns: string };
       revogar_convite: { Args: { p_email: string }; Returns: undefined };
+      revogar_token_mcp: { Args: { p_id: string }; Returns: undefined };
       ultimo_acesso_usuarios: {
         Args: never;
         Returns: {

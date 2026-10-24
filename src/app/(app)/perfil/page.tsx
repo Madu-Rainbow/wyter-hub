@@ -5,6 +5,7 @@ import { Label } from "@front/components/ui/label";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { LogOut } from "lucide-react";
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function PerfilPage({
@@ -85,6 +86,12 @@ export default async function PerfilPage({
           Salvar
         </Button>
       </form>
+      <Link
+        href="/perfil/claude"
+        className="mt-6 block text-sm text-primary underline-offset-4 hover:underline"
+      >
+        Claude (MCP)
+      </Link>
       <form action="/api/auth/sign-out" method="POST" className="mt-6">
         <Button type="submit" variant="secondary" size="sm" className="gap-2">
           <LogOut className="size-3.5" />
