@@ -48,3 +48,6 @@ playwright-report/
 
 # Misc
 *.tsbuildinfo
+
+# Gerado localmente com o hash do segredo do login (nao versionar)
+supabase/migrations/*_login_segredo_local.sql
