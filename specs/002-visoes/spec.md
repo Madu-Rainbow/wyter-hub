@@ -37,6 +37,18 @@ Referência de funcionamento: Trello (kanban), Jira (tabela, filtros, atividade)
 - **FR-002-21**: Chave legível por tarefa (ex.: `FARM-12`, prefixo do projeto + sequência), estilo Jira, exibida no cartão e usada em busca e URL (`/tarefas/FARM-12`).
 - **FR-002-22**: Criar tarefa em qualquer escopo exige escolher projeto (pré-selecionado quando o escopo já define um).
 
+## Área de Trabalho unificada (Projetos + Contratos + Tarefas)
+
+Projetos, Contratos e Tarefas hoje são três áreas soltas com o mesmo dado. Passam a ser UMA área, "Trabalho", organizada pela hierarquia.
+
+- **FR-002-23**: Um único item "Trabalho" na barra lateral (rota `/trabalho`) substitui Projetos, Contratos e Tarefas. Permanecem separados apenas Painel, Minhas tarefas, Clientes, Equipe, DataWare e Admin.
+- **FR-002-24**: `/trabalho` tem a árvore Cliente > Contrato > Projeto à esquerda (FR-002-18) e, à direita, o conteúdo do nó escolhido, sempre com breadcrumb e cabeçalho do escopo (nome, status, responsável, vigência/prazo, progresso).
+- **FR-002-25**: Abas do escopo, que mudam conforme o nível: Visão geral | Tarefas (Kanban / Lista / Tabela) | Projetos (no nível Cliente ou Contrato) | Contratos (no nível Cliente) | Dossiê e registros (no nível Cliente). Nível "Tudo" mostra Visão geral e Tarefas.
+- **FR-002-26**: Visão geral por nível: Cliente = contratos com situação de andamento + projetos + últimas atividades; Contrato = situação, valor, vigência, aditivos, escopos, projetos e progresso; Projeto = prazo, responsável, progresso e tarefas por status.
+- **FR-002-27**: Escopo e aba na URL (`/trabalho?cliente=&contrato=&projeto=&aba=&visao=`). Rotas antigas `/projetos`, `/projetos/[id]`, `/contratos`, `/contratos/[id]`, `/tarefas`, `/tarefas/[chave]` redirecionam para o equivalente em `/trabalho`.
+- **FR-002-28**: Criação no contexto: "Novo" no cabeçalho oferece o que cabe no nível (no Cliente: contrato ou projeto; no Contrato: projeto; no Projeto: tarefa), já com o pai preenchido.
+- **FR-002-29**: Kanban de projetos por status (FR-002-06) e kanban de contratos por situação (FR-007-03) viram visões da aba Projetos/Contratos dentro de `/trabalho`.
+
 ## Critérios de aceite
 
 1. Arrastar um card muda o status e persiste após recarregar.
@@ -45,3 +57,5 @@ Referência de funcionamento: Trello (kanban), Jira (tabela, filtros, atividade)
 4. Em Projetos, trocar de Cards para Kanban e arrastar um projeto muda seu status.
 5. Na árvore, escolher um contrato mostra no kanban as tarefas de todos os projetos desse contrato.
 6. Toda tarefa exibe Cliente / Contrato / Projeto; criar subtarefa a vincula à mãe.
+7. A barra lateral não tem mais Projetos, Contratos e Tarefas separados; "Trabalho" abre a árvore e cada nó mostra suas abas.
+8. Abrir `/contratos/ID` redireciona para `/trabalho?contrato=ID`.
