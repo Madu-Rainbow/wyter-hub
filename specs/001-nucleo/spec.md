@@ -135,6 +135,15 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 - **Escopo extra**: item fora do contrato — status (proposto/aprovado/recusado/faturado), aprovador.
 - **Integração/Sincronização**: mapa de IDs externos↔internos, cursor, erros.
 
+## Revisão: Administração de Usuários (substitui "E-mails autorizados")
+
+- **FR-014**: A tela `/admin/emails` DEVE ser substituída por `/admin/usuarios` ("Usuários"), visível só ao diretor. Uma única lista unifica pessoas e convites: cada linha é um usuário com nome, e-mail, papel, cargo, capacidade semanal, estado (Ativo / Convidado, ainda não entrou / Inativo) e último acesso.
+- **FR-015**: **Convidar** usuário informando e-mail e papel (e cargo/capacidade opcionais): cria o registro autorizado e a `pessoa` pré-vinculada pelo e-mail; no primeiro login com Google o vínculo `auth_user_id` é feito automaticamente (trigger existente). Convite pendente pode ser reenviado (copiar link de acesso) ou revogado.
+- **FR-016**: Diretor pode, na própria linha: alterar papel, cargo e capacidade; desativar/reativar (preserva histórico, bloqueia o login imediatamente); remover convite pendente. Nunca excluir usuário com histórico. O sistema impede desativar ou rebaixar o último diretor ativo e que o diretor remova o próprio acesso.
+- **FR-017**: Busca por nome/e-mail, filtros por papel e estado, e contadores no topo (ativos, convidados, inativos). Alteração de papel, ativação e convite geram evento de auditoria.
+- **FR-018**: O texto da interface usa "Usuários" e "Convidar usuário" (nunca "e-mails autorizados"); `email_autorizado` permanece como tabela de apoio do convite, sem tela própria.
+- **FR-019**: Todas as regras respeitam RLS por org e papel, e e-mail único entre organizações (índice `lower(email)`).
+
 ## Success Criteria
 
 ### Measurable Outcomes
