@@ -31,6 +31,8 @@ Referência de funcionamento: Trello (kanban), Jira (tabela, filtros, atividade)
 
 - **FR-002-00**: Toda tela DEVE caber na viewport do usuário: se a tela tem altura X e largura Y, o conteúdo nunca excede X por Y. A página não rola; apenas regiões internas (listas, tabelas, painéis laterais, colunas do kanban) rolam. Espaçamentos, tamanhos de fonte e dimensões de componentes são fluidos (`clamp`, `fr`, `minmax`, `h-dvh`, `min-h-0`/`min-w-0`) e se adaptam a qualquer resolução, de 1280x720 a telas grandes. Vale para todas as telas novas e existentes, incluindo `/dataware`.
 
+- **FR-002-00b**: Todo campo de seleção (combobox/select) DEVE permitir pesquisa dentro dele: campo de busca no topo da lista, filtragem enquanto digita sem diferenciar acentos nem caixa, navegação por teclado (setas, Enter, Esc, Home/End), opção "limpar" quando o campo é opcional, rolagem interna da lista, estado vazio "Nenhum resultado" e rótulos acessíveis (padrão ARIA combobox). Um único componente compartilhado (`Combobox`) substitui todos os `<select>` nativos, inclusive em formulários de server action (envia o valor por campo oculto com o `name`) e nos filtros de listas, toolbar e painel. Seleção múltipla onde houver vários valores (membros, etiquetas), com chips.
+
 ## Hierarquia e árvore (Cliente > Contrato > Projeto > Tarefa > Subtarefa)
 
 - **FR-002-16**: Hierarquia obrigatória, no modelo Jira/ClickUp: Cliente contém Contratos; Contrato contém Projetos; Projeto contém Tarefas; Tarefa contém Subtarefas. Toda tarefa pertence a um projeto, e portanto tem cliente e contrato derivados do projeto. Projeto novo exige cliente e contrato (contrato do mesmo cliente).

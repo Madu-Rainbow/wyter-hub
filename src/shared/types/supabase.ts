@@ -199,6 +199,8 @@ export type Database = {
           created_at: string;
           deleted_at: string | null;
           id: string;
+          latitude: number | null;
+          longitude: number | null;
           nome_fantasia: string | null;
           org_id: string;
           razao_social: string;
@@ -214,6 +216,8 @@ export type Database = {
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
           nome_fantasia?: string | null;
           org_id: string;
           razao_social: string;
@@ -229,6 +233,8 @@ export type Database = {
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
           nome_fantasia?: string | null;
           org_id?: string;
           razao_social?: string;
@@ -652,6 +658,7 @@ export type Database = {
         Row: {
           antes: Json | null;
           cliente_id: string | null;
+          contrato_id: string | null;
           created_at: string;
           depois: Json | null;
           entidade: string;
@@ -667,6 +674,7 @@ export type Database = {
         Insert: {
           antes?: Json | null;
           cliente_id?: string | null;
+          contrato_id?: string | null;
           created_at?: string;
           depois?: Json | null;
           entidade: string;
@@ -682,6 +690,7 @@ export type Database = {
         Update: {
           antes?: Json | null;
           cliente_id?: string | null;
+          contrato_id?: string | null;
           created_at?: string;
           depois?: Json | null;
           entidade?: string;
@@ -701,6 +710,20 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "cliente";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evento_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evento_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_andamento";
+            referencedColumns: ["contrato_id"];
           },
           {
             foreignKeyName: "evento_org_id_fkey";
@@ -762,6 +785,27 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      municipio_geo: {
+        Row: {
+          lat: number;
+          lng: number;
+          nome: string;
+          uf: string;
+        };
+        Insert: {
+          lat: number;
+          lng: number;
+          nome: string;
+          uf: string;
+        };
+        Update: {
+          lat?: number;
+          lng?: number;
+          nome?: string;
+          uf?: string;
+        };
+        Relationships: [];
       };
       organizacao: {
         Row: {
@@ -1251,6 +1295,7 @@ export type Database = {
         Args: { no_id: string; profundidade?: number };
         Returns: Json;
       };
+      geo_norm: { Args: { s: string }; Returns: string };
       gerar_chave_projeto: {
         Args: { p_nome: string; p_org: string };
         Returns: string;
@@ -1263,6 +1308,15 @@ export type Database = {
           papel: Database["public"]["Enums"]["papel"];
         }[];
       };
+      log_evento_tarefa: {
+        Args: {
+          p_antes: Json;
+          p_depois: Json;
+          p_verbo: string;
+          t: Database["public"]["Tables"]["tarefa"]["Row"];
+        };
+        Returns: undefined;
+      };
       my_org_id: { Args: never; Returns: string };
       my_papel: { Args: never; Returns: Database["public"]["Enums"]["papel"] };
     };
@@ -1272,7 +1326,7 @@ export type Database = {
       dossie_confianca: "fato" | "a_confirmar";
       dossie_tipo: "fato" | "decisao" | "restricao" | "sistema" | "glossario" | "pessoa_chave";
       escopo_extra_status: "proposto" | "aprovado" | "recusado" | "faturado";
-      origem: "ui" | "trello" | "email" | "drive" | "mcp" | "ia";
+      origem: "ui" | "trello" | "email" | "drive" | "mcp" | "ia" | "sistema" | "importador";
       papel: "diretor" | "consultor" | "analista" | "convidado";
       papel_no_cliente: "decisor" | "operacional" | "fornecedor" | "contador" | "advogado";
       prioridade: "critica" | "alta" | "media" | "baixa";
@@ -1417,7 +1471,7 @@ export const Constants = {
       dossie_confianca: ["fato", "a_confirmar"],
       dossie_tipo: ["fato", "decisao", "restricao", "sistema", "glossario", "pessoa_chave"],
       escopo_extra_status: ["proposto", "aprovado", "recusado", "faturado"],
-      origem: ["ui", "trello", "email", "drive", "mcp", "ia"],
+      origem: ["ui", "trello", "email", "drive", "mcp", "ia", "sistema", "importador"],
       papel: ["diretor", "consultor", "analista", "convidado"],
       papel_no_cliente: ["decisor", "operacional", "fornecedor", "contador", "advogado"],
       prioridade: ["critica", "alta", "media", "baixa"],
