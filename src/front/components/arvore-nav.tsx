@@ -2,7 +2,7 @@
 
 import type { NoCliente } from "@front/lib/arvore";
 import { trabalhoHref } from "@front/lib/trabalho";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, Layers, Search } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -58,12 +58,18 @@ export function ArvoreNav({ clientes }: { clientes: NoCliente[] }) {
           className="w-full rounded-md border border-border bg-bg py-1.5 pl-7 pr-2 text-sm text-text focus:border-accent focus:outline-none"
         />
       </div>
-      <Link
-        href="/trabalho"
-        className={`mx-1 mb-1 ${linha(!ativo.cliente && !ativo.contrato && !ativo.projeto)}`}
-      >
-        Tudo
-      </Link>
+      <div className="mx-1 mb-1 flex shrink-0 items-center">
+        <span className="p-1 text-text-muted">
+          <Layers className="size-3.5" />
+        </span>
+        <Link
+          href="/trabalho"
+          className={linha(!ativo.cliente && !ativo.contrato && !ativo.projeto)}
+        >
+          <span className="truncate">Tudo</span>
+          <Contador n={clientes.reduce((s, c) => s + c.abertas, 0)} />
+        </Link>
+      </div>
       <ul className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
         {clientes.map((c) => {
           const cliOk = !q || casa(c.nome);
