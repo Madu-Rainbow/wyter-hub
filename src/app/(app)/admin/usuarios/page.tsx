@@ -95,6 +95,10 @@ export default async function UsuariosPage({
           </p>
         </div>
         <ConvidarForm />
+        <p className="w-full text-xs text-text-muted">
+          O acesso é por e-mail e senha. Convidar libera o e-mail; a senha inicial é definida pelo
+          diretor.
+        </p>
       </div>
 
       <form className="mb-3 flex flex-wrap gap-2">

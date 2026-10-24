@@ -4,7 +4,7 @@
 
 ## Summary
 
-Implementar o modelo de dados completo do Wyter Hub com Drizzle ORM + PostgreSQL, autenticação Google OAuth via Better Auth com lista de e-mails autorizados, sistema de papéis (diretor/consultor/analista/convidado), log de eventos append-only, dossiê do cliente, e seed de dados fictícios. Tudo com schemas Zod compartilhados.
+Implementar o modelo de dados completo do Wyter Hub com Drizzle ORM + PostgreSQL, autenticação por e-mail e senha (Supabase Auth) com lista de e-mails autorizados, sistema de papéis (diretor/consultor/analista/convidado), log de eventos append-only, dossiê do cliente, e seed de dados fictícios. Tudo com schemas Zod compartilhados.
 
 ## Technical Context
 
@@ -161,7 +161,7 @@ src/
 4. Criar tabela `email_autorizado` com seed dos e-mails da Wyter
 5. Implementar middleware que verifica sessão + papel + restringe por org_id
 6. Criar `src/back/auth/permissions.ts` com a matriz: quem pode o quê
-7. Criar tela de login (`/login`) — botão "Entrar com Google", mensagem de erro para não autorizados
+7. Criar tela de login (`/login`) — formulário e-mail e senha, mensagem de erro para não autorizados
 8. Criar tela de admin de e-mails (`/admin/emails`) — só diretor
 
 ### Fase 4 — Serviço de eventos (estimativa: 0.5h)

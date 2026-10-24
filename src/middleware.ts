@@ -28,10 +28,9 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAuthPage = pathname === "/login";
-  const isCallback = pathname.startsWith("/auth/callback");
   const isAuthApi = pathname.startsWith("/api/auth");
 
-  if (!user && !isAuthPage && !isCallback) {
+  if (!user && !isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

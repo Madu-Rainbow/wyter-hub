@@ -12,7 +12,7 @@ Edge Functions para lógica complexa. MCP no Supabase para integração com Clau
 ## Stack
 - **Front:** Next.js 16 (App Router, RSC), TypeScript estrito, Tailwind CSS 4, shadcn/ui, Zod, date-fns pt-BR
 - **Backend:** Supabase (PostgreSQL + Auth + RLS + Edge Functions + Storage)
-- **Auth:** Supabase Auth com Google OAuth, emails autorizados, papéis via tabela `pessoa`
+- **Auth:** Supabase Auth com e-mail e senha (sem cadastro público), emails autorizados, papéis via tabela `pessoa`
 - **Shared:** Schemas Zod em `src/shared/schemas/`, tipos gerados por `supabase gen types`
 - **Testes:** Vitest (unit), Playwright (E2E)
 - **Lint/Format:** Biome

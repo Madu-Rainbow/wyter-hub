@@ -6,21 +6,21 @@
 
 **Status**: Draft
 
-**Input**: Modelo de dados completo do Wyter Hub, autenticação com Google OAuth via Better Auth, sistema de papéis e permissões (diretor/consultor/analista/convidado), log de eventos append-only, dossiê do cliente.
+**Input**: Modelo de dados completo do Wyter Hub, autenticação por e-mail e senha (Supabase Auth), sistema de papéis e permissões (diretor/consultor/analista/convidado), log de eventos append-only, dossiê do cliente.
 
 ## User Scenarios & Testing
 
-### User Story 1 — Login com Google (Priority: P1)
+### User Story 1 — Login com e-mail e senha (Priority: P1)
 
-Um membro da Wyter acessa o sistema pela primeira vez. Clica em "Entrar com Google", autentica com seu e-mail corporativo, e é redirecionado para a tela "Minhas Tarefas". Apenas e-mails autorizados da Wyter conseguem entrar.
+Um membro da Wyter acessa o sistema pela primeira vez. Informa o e-mail e a senha criados pelo diretor, e é redirecionado para a tela "Minhas Tarefas". Apenas e-mails autorizados da Wyter conseguem entrar.
 
 **Why this priority**: Sem autenticação, nada mais funciona. É a porta de entrada do sistema.
 
-**Independent Test**: Pode ser testado isoladamente acessando /login, autenticando com Google e verificando que a sessão é criada e o papel atribuído.
+**Independent Test**: Pode ser testado isoladamente acessando /login, autenticando com e-mail e senha e verificando que a sessão é criada e o papel atribuído.
 
 **Acceptance Scenarios**:
 
-1. **Given** um e-mail autorizado da Wyter, **When** o usuário faz login com Google, **Then** é autenticado e redirecionado para /minhas-tarefas com seu papel correto.
+1. **Given** um e-mail autorizado da Wyter, **When** o usuário faz login com e-mail e senha, **Then** é autenticado e redirecionado para /minhas-tarefas com seu papel correto.
 2. **Given** um e-mail NÃO autorizado, **When** tenta fazer login, **Then** recebe mensagem "Acesso restrito a membros da Wyter" e não é criada sessão.
 3. **Given** um usuário já autenticado, **When** acessa qualquer rota, **Then** o middleware verifica a sessão e permite acesso conforme o papel.
 
@@ -93,7 +93,7 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 ### Edge Cases
 
 - O que acontece quando um membro é removido da Wyter? → Desativa a conta, mas preserva histórico de eventos e registros.
-- O que acontece se o Google OAuth estiver fora do ar? → Mensagem clara de erro, sem fallback de senha.
+- O que acontece se o Supabase Auth estiver fora do ar ou houver muitas tentativas? → Mensagem clara de erro; o limite de tentativas é do Supabase (`auth.rate_limit.sign_in_sign_ups`).
 - O que acontece com dados de um cliente excluído? → Clientes não são excluídos, apenas arquivados (soft delete).
 - O que acontece se dois usuários editam o mesmo registro simultaneamente? → Last-write-wins com evento de conflito registrado.
 
@@ -101,7 +101,7 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 
 ### Functional Requirements
 
-- **FR-001**: Sistema DEVE autenticar usuários via Google OAuth restrito a e-mails autorizados.
+- **FR-001**: Sistema DEVE autenticar usuários por e-mail e senha (mínimo 8 caracteres, sem cadastro público) restrito a e-mails autorizados.
 - **FR-002**: Sistema DEVE atribuir papel (diretor/consultor/analista/convidado) a cada usuário no cadastro.
 - **FR-003**: Sistema DEVE aplicar controle de acesso em todas as rotas de API e páginas baseado no papel do usuário.
 - **FR-004**: Sistema DEVE criar evento imutável para toda ação de CRUD com campos: quem, quando, entidade, id, verbo, antes/depois, origem, cliente_id.
@@ -138,7 +138,7 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 ## Revisão: Administração de Usuários (substitui "E-mails autorizados")
 
 - **FR-014**: A tela `/admin/emails` DEVE ser substituída por `/admin/usuarios` ("Usuários"), visível só ao diretor. Uma única lista unifica pessoas e convites: cada linha é um usuário com nome, e-mail, papel, cargo, capacidade semanal, estado (Ativo / Convidado, ainda não entrou / Inativo) e último acesso.
-- **FR-015**: **Convidar** usuário informando e-mail e papel (e cargo/capacidade opcionais): cria o registro autorizado e a `pessoa` pré-vinculada pelo e-mail; no primeiro login com Google o vínculo `auth_user_id` é feito automaticamente (trigger existente). Convite pendente pode ser reenviado (copiar link de acesso) ou revogado.
+- **FR-015**: **Convidar** usuário informando e-mail e papel (e cargo/capacidade opcionais): cria o registro autorizado e a `pessoa` pré-vinculada pelo e-mail; o diretor define a senha inicial e o usuário entra com o e-mail e a senha criados; no primeiro login o vínculo `auth_user_id` é feito automaticamente (trigger existente). Convite pendente pode ser reenviado (copiar link de acesso) ou revogado.
 - **FR-016**: Diretor pode, na própria linha: alterar papel, cargo e capacidade; desativar/reativar (preserva histórico, bloqueia o login imediatamente); remover convite pendente. Nunca excluir usuário com histórico. O sistema impede desativar ou rebaixar o último diretor ativo e que o diretor remova o próprio acesso.
 - **FR-017**: Busca por nome/e-mail, filtros por papel e estado, e contadores no topo (ativos, convidados, inativos). Alteração de papel, ativação e convite geram evento de auditoria.
 - **FR-018**: O texto da interface usa "Usuários" e "Convidar usuário" (nunca "e-mails autorizados"); `email_autorizado` permanece como tabela de apoio do convite, sem tela própria.
@@ -148,7 +148,7 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 
 ### Measurable Outcomes
 
-- **SC-001**: Login com Google completa em menos de 3 segundos após redirecionamento.
+- **SC-001**: Login com e-mail e senha completa em menos de 3 segundos após redirecionamento.
 - **SC-002**: Toda ação de CRUD gera evento no log em menos de 50ms adicionais de latência.
 - **SC-003**: Consulta de eventos por pessoa+dia retorna em menos de 200ms com 10.000 eventos no banco.
 - **SC-004**: Acesso negado (403) retorna em menos de 50ms para rotas não autorizadas.
@@ -158,7 +158,7 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 
 ## Assumptions
 
-- Google OAuth é o único método de autenticação (sem senha, sem magic link).
+- E-mail e senha é o único método de autenticação (sem OAuth, sem magic link, sem cadastro público).
 - A lista de e-mails autorizados é gerenciada por um diretor na tela de configuração (tabela no banco).
 - Na MVP, existe apenas uma organização (Wyter). O org_id está presente em todas as tabelas mas não há tela de troca.
 - Desenvolvimento local com Postgres nativo; produção em Supabase. Código compatível com ambos.
