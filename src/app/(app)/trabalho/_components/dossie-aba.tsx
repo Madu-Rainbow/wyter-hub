@@ -1,10 +1,10 @@
 import { ContatoForm } from "@front/components/clientes/contato-form";
 import { DossieSheet } from "@front/components/clientes/dossie-sheet";
+import { SensiveisSecao } from "@front/components/clientes/sensiveis-secao";
 import { fmtISO } from "@front/components/trabalho/tipos";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { adicionarContato, adicionarDossie } from "../../clientes/[id]/actions";
 
-const RET = /^\[Retificação:([0-9a-f-]{36})\]\s*/;
 const TIPOS: Record<string, string> = {
   fato: "Fato",
   decisao: "Decisão",
@@ -12,6 +12,7 @@ const TIPOS: Record<string, string> = {
   sistema: "Sistema",
   glossario: "Glossário",
   pessoa_chave: "Pessoa-chave",
+  retificacao: "Retificação",
 };
 
 /** Aba "Dossiê e registros" do cliente: contatos, dossiê e registros recentes (mesmas ações da página do cliente). */
@@ -20,7 +21,7 @@ export async function DossieAba({ clienteId, papel }: { clienteId: string; papel
   const [{ data: dossies }, { data: contatos }, { data: eventos }] = await Promise.all([
     sb
       .from("dossie_cliente")
-      .select("id, tipo, conteudo, fonte, confianca, created_at")
+      .select("id, tipo, conteudo, fonte, confianca, created_at, retifica_id")
       .eq("cliente_id", clienteId)
       .order("created_at", { ascending: false }),
     sb
@@ -36,9 +37,7 @@ export async function DossieAba({ clienteId, papel }: { clienteId: string; papel
       .order("quando", { ascending: false })
       .limit(20),
   ]);
-  const retificadas = new Set(
-    (dossies ?? []).map((d) => RET.exec(d.conteudo)?.[1]).filter(Boolean),
-  );
+  const retificadas = new Set((dossies ?? []).map((d) => d.retifica_id).filter(Boolean));
   const podeEditar = ["diretor", "consultor"].includes(papel);
   const addContato = adicionarContato.bind(null, clienteId);
   const addDossie = adicionarDossie.bind(null, clienteId);
@@ -99,8 +98,8 @@ export async function DossieAba({ clienteId, papel }: { clienteId: string; papel
         </div>
         <div className="space-y-2">
           {dossies?.map((d) => {
-            const orig = RET.exec(d.conteudo)?.[1];
-            const texto = d.conteudo.replace(RET, "");
+            const orig = d.retifica_id;
+            const texto = d.conteudo;
             return (
               <div
                 key={d.id}
@@ -129,7 +128,11 @@ export async function DossieAba({ clienteId, papel }: { clienteId: string; papel
                     <span className="text-xs text-amber-600">A confirmar</span>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-text">{texto}</p>
+                <p
+                  className={`mt-1 text-sm text-text ${retificadas.has(d.id) ? "line-through" : ""}`}
+                >
+                  {texto}
+                </p>
                 {d.fonte && <p className="mt-1 text-xs text-text-muted">Fonte: {d.fonte}</p>}
               </div>
             );
@@ -141,6 +144,7 @@ export async function DossieAba({ clienteId, papel }: { clienteId: string; papel
           )}
         </div>
       </section>
+      <SensiveisSecao clienteId={clienteId} papel={papel} />
     </div>
   );
 }

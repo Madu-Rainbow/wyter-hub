@@ -1,5 +1,6 @@
 import { ContatoForm } from "@front/components/clientes/contato-form";
 import { DossieSheet } from "@front/components/clientes/dossie-sheet";
+import { SensiveisSecao } from "@front/components/clientes/sensiveis-secao";
 import { Button } from "@front/components/ui/button";
 import { financeiroContratos } from "@front/lib/financeiro";
 import { ehGestor } from "@front/lib/papel";
@@ -54,7 +55,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
       .order("vigencia_inicio", { ascending: false }),
     supabase
       .from("dossie_cliente")
-      .select("id, tipo, conteudo, fonte, confianca, created_at")
+      .select("id, tipo, conteudo, fonte, confianca, created_at, retifica_id")
       .eq("cliente_id", id)
       .order("created_at", { ascending: false }),
     supabase
@@ -79,10 +80,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
     data_prazo: string | null;
     projeto: { id: string; nome: string };
   }[];
-  const RET = /^\[Retificação:([0-9a-f-]{36})\]\s*/;
-  const retificadas = new Set(
-    (dossies ?? []).map((d) => RET.exec(d.conteudo)?.[1]).filter(Boolean),
-  );
+  const retificadas = new Set((dossies ?? []).map((d) => d.retifica_id).filter(Boolean));
   const finContratos = ehGestor(pessoaPapel)
     ? await financeiroContratos(
         supabase,
@@ -300,8 +298,8 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
           </div>
           <div className="space-y-2">
             {dossies?.map((d) => {
-              const orig = RET.exec(d.conteudo)?.[1];
-              const texto = d.conteudo.replace(RET, "");
+              const orig = d.retifica_id;
+              const texto = d.conteudo;
               return (
                 <div
                   key={d.id}
@@ -328,7 +326,11 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
                       <span className="text-xs text-amber-600">A confirmar</span>
                     )}
                   </div>
-                  <p className="mt-1 text-sm text-text">{texto}</p>
+                  <p
+                    className={`mt-1 text-sm text-text ${retificadas.has(d.id) ? "line-through" : ""}`}
+                  >
+                    {texto}
+                  </p>
                   {d.fonte && <p className="mt-1 text-xs text-text-muted">Fonte: {d.fonte}</p>}
                 </div>
               );
@@ -340,6 +342,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
             )}
           </div>
         </section>
+        <SensiveisSecao clienteId={id} papel={pessoaPapel ?? ""} />
       </div>
     </div>
   );
@@ -394,6 +397,7 @@ function DossieTipoBadge({ tipo }: { tipo: string }) {
     sistema: "Sistema",
     glossario: "Glossário",
     pessoa_chave: "Pessoa-chave",
+    retificacao: "Retificação",
   };
   return (
     <span className="rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-text-muted">

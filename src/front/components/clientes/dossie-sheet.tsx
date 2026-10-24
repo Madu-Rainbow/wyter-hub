@@ -82,7 +82,7 @@ export function DossieSheet({
               </p>
             </>
           )}
-          <div className="space-y-1">
+          <div className={retifica ? "hidden" : "space-y-1"}>
             <Label htmlFor="d-tipo">Tipo</Label>
             <select id="d-tipo" name="tipo" defaultValue={retifica?.tipo ?? "fato"} className={sel}>
               {tipos.map(([v, l]) => (
