@@ -53,6 +53,11 @@ Projetos, Contratos e Tarefas hoje são três áreas soltas com o mesmo dado. Pa
 - **FR-002-28**: Criação no contexto: "Novo" no cabeçalho oferece o que cabe no nível (no Cliente: contrato ou projeto; no Contrato: projeto; no Projeto: tarefa), já com o pai preenchido.
 - **FR-002-29**: Kanban de projetos por status (FR-002-06) e kanban de contratos por situação (FR-007-03) viram visões da aba Projetos/Contratos dentro de `/trabalho`.
 
+## Gantt e ajustes da árvore
+
+- **FR-002-30**: Visão **Gantt** nas Tarefas (ao lado de Kanban, Lista e Tabela, `?visao=gantt`), no escopo escolhido (projeto, contrato, cliente ou tudo). Barras de `data_inicio` a `data_prazo` por tarefa, agrupadas por projeto (linhas colapsáveis), com subtarefas aninhadas. Escalas Dia / Semana / Mês / Trimestre com zoom, linha de "hoje", fim de semana sombreado, barra colorida pelo status e com preenchimento de progresso (checklist ou subtarefas entregues), marca de atraso. Tarefa sem datas aparece numa lista "Sem datas" a ser agendada. Arrastar a barra move as datas; arrastar as bordas redimensiona (grava no banco, com evento e erro visível); convidado só lê. Setas de dependência para `bloqueada_por_id`. Clicar na barra abre o painel da tarefa. Respeita FR-002-00 (cabe na viewport; rolagem só na grade e na escala).
+- **FR-002-31**: O item "Tudo" da árvore (nível raiz) DEVE ser compacto, do mesmo tamanho e estilo dos demais nós (linha única, ícone pequeno, contador), nunca um botão grande ou destacado.
+
 ## Critérios de aceite
 
 1. Arrastar um card muda o status e persiste após recarregar.
@@ -63,3 +68,5 @@ Projetos, Contratos e Tarefas hoje são três áreas soltas com o mesmo dado. Pa
 6. Toda tarefa exibe Cliente / Contrato / Projeto; criar subtarefa a vincula à mãe.
 7. A barra lateral não tem mais Projetos, Contratos e Tarefas separados; "Trabalho" abre a árvore e cada nó mostra suas abas.
 8. Abrir `/contratos/ID` redireciona para `/trabalho?contrato=ID`.
+9. Na visão Gantt, arrastar uma barra para a direita muda `data_inicio` e `data_prazo` e persiste após recarregar.
+10. O nó "Tudo" da árvore tem a mesma altura dos demais nós.
