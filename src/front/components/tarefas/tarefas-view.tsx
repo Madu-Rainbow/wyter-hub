@@ -7,6 +7,7 @@ import { Plus, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { atualizarTarefa, criarTarefa } from "./acoes";
+import { GanttView } from "./gantt-view";
 import { ListaView } from "./lista-view";
 import {
   type Agrupar,
@@ -30,6 +31,7 @@ const VISOES: [Visao, string][] = [
   ["kanban", "Kanban"],
   ["lista", "Lista"],
   ["tabela", "Tabela"],
+  ["gantt", "Gantt"],
 ];
 const ctl =
   "rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-text focus:border-accent focus:outline-none";
@@ -55,7 +57,10 @@ export function TarefasView({
   const pathname = usePathname();
   const params = useSearchParams();
   const visaoParam = params.get("visao");
-  const visao: Visao = visaoParam === "lista" || visaoParam === "tabela" ? visaoParam : "kanban";
+  const visao: Visao =
+    visaoParam === "lista" || visaoParam === "tabela" || visaoParam === "gantt"
+      ? visaoParam
+      : "kanban";
 
   const [, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
@@ -255,7 +260,7 @@ export function TarefasView({
         )}
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          {visao !== "tabela" && (
+          {(visao === "kanban" || visao === "lista") && (
             <select
               aria-label="Agrupar por"
               className={ctl}
@@ -329,6 +334,15 @@ export function TarefasView({
       )}
       {visao === "tabela" && (
         <TabelaView tarefas={filtradas} onOpen={(t) => setSheet({ id: t.id, status: t.status })} />
+      )}
+      {visao === "gantt" && (
+        <GanttView
+          tarefas={filtradas}
+          projetos={ctx.projetos}
+          readOnly={ctx.readOnly}
+          onOpen={(t) => setSheet({ id: t.id, status: t.status })}
+          onPatch={patch}
+        />
       )}
 
       <TarefaSheet

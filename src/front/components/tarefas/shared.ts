@@ -78,7 +78,7 @@ export const prioridadeBorder: Record<string, string> = {
 };
 
 export type Agrupar = "status" | "responsavel" | "prioridade" | "cliente" | "contrato" | "projeto";
-export type Visao = "kanban" | "lista" | "tabela";
+export type Visao = "kanban" | "lista" | "tabela" | "gantt";
 
 export type Filtros = {
   busca: string;
