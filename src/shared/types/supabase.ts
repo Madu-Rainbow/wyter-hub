@@ -437,6 +437,67 @@ export type Database = {
           },
         ];
       };
+      dado_sensivel: {
+        Row: {
+          campo: string;
+          cliente_id: string;
+          created_at: string;
+          created_by: string;
+          deleted_at: string | null;
+          entidade: string;
+          entidade_id: string;
+          id: string;
+          org_id: string;
+          valor_cifrado: string;
+        };
+        Insert: {
+          campo: string;
+          cliente_id: string;
+          created_at?: string;
+          created_by: string;
+          deleted_at?: string | null;
+          entidade?: string;
+          entidade_id: string;
+          id?: string;
+          org_id: string;
+          valor_cifrado: string;
+        };
+        Update: {
+          campo?: string;
+          cliente_id?: string;
+          created_at?: string;
+          created_by?: string;
+          deleted_at?: string | null;
+          entidade?: string;
+          entidade_id?: string;
+          id?: string;
+          org_id?: string;
+          valor_cifrado?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "dado_sensivel_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "cliente";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "dado_sensivel_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "pessoa";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "dado_sensivel_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       dossie_cliente: {
         Row: {
           cliente_id: string;
@@ -449,6 +510,7 @@ export type Database = {
           fonte: string | null;
           id: string;
           org_id: string;
+          retifica_id: string | null;
           tipo: Database["public"]["Enums"]["dossie_tipo"];
           updated_at: string;
         };
@@ -463,6 +525,7 @@ export type Database = {
           fonte?: string | null;
           id?: string;
           org_id: string;
+          retifica_id?: string | null;
           tipo: Database["public"]["Enums"]["dossie_tipo"];
           updated_at?: string;
         };
@@ -477,6 +540,7 @@ export type Database = {
           fonte?: string | null;
           id?: string;
           org_id?: string;
+          retifica_id?: string | null;
           tipo?: Database["public"]["Enums"]["dossie_tipo"];
           updated_at?: string;
         };
@@ -493,6 +557,13 @@ export type Database = {
             columns: ["org_id"];
             isOneToOne: false;
             referencedRelation: "organizacao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "dossie_cliente_retifica_id_fkey";
+            columns: ["retifica_id"];
+            isOneToOne: false;
+            referencedRelation: "dossie_cliente";
             referencedColumns: ["id"];
           },
         ];
@@ -1281,6 +1352,26 @@ export type Database = {
       };
     };
     Functions: {
+      atualizar_usuario: {
+        Args: {
+          p_ativo: boolean;
+          p_capacidade: number;
+          p_cargo: string;
+          p_papel: Database["public"]["Enums"]["papel"];
+          p_pessoa_id: string;
+        };
+        Returns: undefined;
+      };
+      convidar_usuario: {
+        Args: {
+          p_capacidade?: number;
+          p_cargo?: string;
+          p_email: string;
+          p_nome?: string;
+          p_papel: Database["public"]["Enums"]["papel"];
+        };
+        Returns: string;
+      };
       dw_eventos: {
         Args: {
           p_ate?: string;
@@ -1308,6 +1399,10 @@ export type Database = {
           papel: Database["public"]["Enums"]["papel"];
         }[];
       };
+      gravar_sensivel: {
+        Args: { p_campo: string; p_cliente: string; p_valor: string };
+        Returns: string;
+      };
       log_evento_tarefa: {
         Args: {
           p_antes: Json;
@@ -1319,12 +1414,28 @@ export type Database = {
       };
       my_org_id: { Args: never; Returns: string };
       my_papel: { Args: never; Returns: Database["public"]["Enums"]["papel"] };
+      revelar_sensivel: { Args: { p_id: string }; Returns: string };
+      revogar_convite: { Args: { p_email: string }; Returns: undefined };
+      ultimo_acesso_usuarios: {
+        Args: never;
+        Returns: {
+          pessoa_id: string;
+          ultimo_acesso: string;
+        }[];
+      };
     };
     Enums: {
       aprovacao_status: "pendente" | "aprovada" | "recusada";
       cliente_status: "ativo" | "inativo" | "arquivado";
       dossie_confianca: "fato" | "a_confirmar";
-      dossie_tipo: "fato" | "decisao" | "restricao" | "sistema" | "glossario" | "pessoa_chave";
+      dossie_tipo:
+        | "fato"
+        | "decisao"
+        | "restricao"
+        | "sistema"
+        | "glossario"
+        | "pessoa_chave"
+        | "retificacao";
       escopo_extra_status: "proposto" | "aprovado" | "recusado" | "faturado";
       origem: "ui" | "trello" | "email" | "drive" | "mcp" | "ia" | "sistema" | "importador";
       papel: "diretor" | "consultor" | "analista" | "convidado";
@@ -1469,7 +1580,15 @@ export const Constants = {
       aprovacao_status: ["pendente", "aprovada", "recusada"],
       cliente_status: ["ativo", "inativo", "arquivado"],
       dossie_confianca: ["fato", "a_confirmar"],
-      dossie_tipo: ["fato", "decisao", "restricao", "sistema", "glossario", "pessoa_chave"],
+      dossie_tipo: [
+        "fato",
+        "decisao",
+        "restricao",
+        "sistema",
+        "glossario",
+        "pessoa_chave",
+        "retificacao",
+      ],
       escopo_extra_status: ["proposto", "aprovado", "recusado", "faturado"],
       origem: ["ui", "trello", "email", "drive", "mcp", "ia", "sistema", "importador"],
       papel: ["diretor", "consultor", "analista", "convidado"],
