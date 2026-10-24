@@ -1,7 +1,17 @@
-export type Dim = "status" | "prio" | "pessoa" | "sem" | "pst" | "sit";
+export type Dim = "status" | "prio" | "pessoa" | "sem" | "pst" | "sit" | "seg" | "tipo" | "cidade";
 export type Sel = Partial<Record<Dim, string[]>>;
 
-export const DIMS: Dim[] = ["status", "prio", "pessoa", "sem", "pst", "sit"];
+export const DIMS: Dim[] = [
+  "status",
+  "prio",
+  "pessoa",
+  "sem",
+  "pst",
+  "sit",
+  "seg",
+  "tipo",
+  "cidade",
+];
 export const PARAM: Record<Dim, string> = {
   status: "f_status",
   prio: "f_prio",
@@ -9,6 +19,9 @@ export const PARAM: Record<Dim, string> = {
   sem: "f_sem",
   pst: "f_pst",
   sit: "f_sit",
+  seg: "f_seg",
+  tipo: "f_tipo",
+  cidade: "f_cidade",
 };
 
 export function selDeParams(sp: Record<string, string | undefined>): Sel {

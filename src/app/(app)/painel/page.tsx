@@ -43,6 +43,31 @@ function segundaDe(d: Date) {
   return r;
 }
 
+type Geo = {
+  id: string;
+  cidade: string | null;
+  uf: string | null;
+  segmento: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+async function geocliente(sb: Awaited<ReturnType<typeof createSupabaseServer>>, cliente?: string) {
+  const consulta = async (cols: string) => {
+    let q = sb
+      .from("cliente")
+      .select(cols as never)
+      .eq("status", "ativo")
+      .is("deleted_at", null);
+    if (cliente) q = q.eq("id", cliente);
+    return q;
+  };
+  const r = await consulta("id, cidade, uf, segmento, latitude, longitude");
+  if (!r.error) return (r.data ?? []) as unknown as Geo[];
+  const r2 = await consulta("id, cidade, uf, segmento");
+  return (r2.data ?? []) as unknown as Geo[];
+}
+
 export default async function PainelPage({ searchParams }: { searchParams: Promise<SP> }) {
   const f = await searchParams;
   const supabase = await createSupabaseServer();
@@ -59,6 +84,9 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
   const papel = eu?.papel ?? "analista";
   const gestor = papel === "diretor" || papel === "consultor";
   const hoje = hojeISO();
+  const daqui28 = new Date(new Date(`${hoje}T00:00:00Z`).getTime() + 28 * 86400000)
+    .toISOString()
+    .slice(0, 10);
 
   // Tarefas: filtros globais; RLS limita ao que o usuário pode ver.
   let qt = supabase
@@ -76,7 +104,7 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
 
   let qp = supabase
     .from("projeto")
-    .select("id, status, cliente_id, contrato_id")
+    .select("id, nome, status, cliente_id, contrato_id")
     .is("deleted_at", null);
   if (f.cliente) qp = qp.eq("cliente_id", f.cliente);
   if (f.projeto) qp = qp.eq("id", f.projeto);
@@ -84,6 +112,9 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
 
   let qc = supabase.from("contrato_andamento").select("contrato_id, cliente_id, situacao");
   if (f.cliente) qc = qc.eq("cliente_id", f.cliente);
+
+  let qct = supabase.from("contrato").select("id, tipo").is("deleted_at", null);
+  if (f.cliente) qct = qct.eq("cliente_id", f.cliente);
 
   let qcl = supabase
     .from("cliente")
@@ -101,6 +132,8 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
     listaProjetosR,
     aprovR,
     valoresR,
+    tiposR,
+    clientesGeoR,
   ] = await Promise.all([
     qt,
     qp,
@@ -125,6 +158,9 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
     gestor
       ? supabase.from("contrato_financeiro" as never).select("contrato_id, valor")
       : Promise.resolve({ data: null }),
+    qct,
+    // latitude/longitude vêm da migration 000006; sem elas (erro), cai para a consulta sem coordenadas.
+    geocliente(supabase, f.cliente),
   ]);
 
   const LIMITE = 5000;
@@ -158,12 +194,23 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
     sem: t.status === "concluida" ? semanaDe(t.updated_at) : null,
     aberta: (ABERTAS as string[]).includes(t.status),
     atr: !!t.data_prazo && t.data_prazo < hoje,
+    jan: !!t.data_prazo && t.data_prazo >= hoje && t.data_prazo <= daqui28,
   }));
   const valores = new Map(
     ((valoresR.data ?? []) as unknown as { contrato_id: string; valor: number | null }[]).map(
       (c) => [c.contrato_id, c.valor],
     ),
   );
+  const tipos = new Map(
+    ((tiposR.data ?? []) as { id: string; tipo: string }[]).map((t) => [t.id, t.tipo]),
+  );
+  const clientesGeo = clientesGeoR.map((c) => ({
+    id: c.id,
+    seg: c.segmento?.trim() || "Sem segmento",
+    cid: c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ""}` : null,
+    lat: typeof c.latitude === "number" ? c.latitude : null,
+    lng: typeof c.longitude === "number" ? c.longitude : null,
+  }));
   const cats = {
     status: TAREFA_STATUS.map((k) => ({ key: k, label: statusLabels[k] ?? k })),
     prio: PRIORIDADES.map(([key, label]) => ({ key, label })),
@@ -237,6 +284,7 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
         tarefas={tarefas}
         projetos={projetos.map((x) => ({
           id: x.id,
+          nm: x.nome,
           st: x.status,
           cl: x.cliente_id,
           ct: x.contrato_id,
@@ -246,8 +294,11 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
           .map((c) => ({
             id: c.contrato_id as string,
             sit: c.situacao as string,
+            cl: c.cliente_id as string,
+            tipo: tipos.get(c.contrato_id as string) ?? "Outros",
             valor: gestor ? (valores.get(c.contrato_id as string) ?? null) : null,
           }))}
+        clientes={clientesGeo}
         clientesAtivos={clientesR.count ?? 0}
         aprovacoes={aprovR.count ?? 0}
         gestor={gestor}

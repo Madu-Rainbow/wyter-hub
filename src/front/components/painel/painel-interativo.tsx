@@ -1,7 +1,30 @@
 "use client";
 
+import { DIMS, type Dim, PARAM, type Sel } from "@front/lib/painel-sel";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Bloco,
+  brl,
+  COR_OUTROS,
+  ehMulti,
+  FOCO,
+  type Multi,
+  num,
+  SERIE,
+  Tabela,
+  VIZ_CSS,
+} from "./bloco";
+import { EmpilhadasBloco, type LinhaEmp } from "./empilhadas";
+import type { Cidade } from "./mapa-clientes";
+import { MedidorBloco } from "./medidor";
+import { fatiar, RoscaBloco } from "./rosca";
+
+const MapaClientes = dynamic(() => import("./mapa-clientes"), {
+  ssr: false,
+  loading: () => <p className="m-auto text-xs text-text-muted">Carregando mapa…</p>,
+});
 
 /** Linhas brutas vindas do servidor (já filtradas por RLS e filtros globais). */
 export type TarefaR = {
@@ -13,13 +36,25 @@ export type TarefaR = {
   sem: string | null; // semana de conclusão (últimas 8)
   aberta: boolean;
   atr: boolean;
+  jan: boolean; // prazo nas próximas 4 semanas (não atrasada)
 };
-export type ProjetoR = { id: string; st: string; cl: string; ct: string | null };
-export type ContratoR = { id: string; sit: string; valor: number | null };
+export type ProjetoR = { id: string; nm: string; st: string; cl: string; ct: string | null };
+export type ContratoR = {
+  id: string;
+  sit: string;
+  cl: string;
+  tipo: string;
+  valor: number | null;
+};
+export type ClienteR = {
+  id: string;
+  seg: string; // "Sem segmento" quando vazio
+  cid: string | null; // "Cidade/UF"
+  lat: number | null;
+  lng: number | null;
+};
 export type Cat = { key: string; label: string };
 export type Pessoa = Cat & { cap: number | null };
-
-import { DIMS, type Dim, PARAM, type Sel } from "@front/lib/painel-sel";
 
 const DIM_LABEL: Record<Dim, string> = {
   status: "Status da tarefa",
@@ -28,12 +63,16 @@ const DIM_LABEL: Record<Dim, string> = {
   sem: "Semana",
   pst: "Status do projeto",
   sit: "Situação do contrato",
+  seg: "Segmento",
+  tipo: "Categoria de contratação",
+  cidade: "Cidade",
 };
 
 type Props = {
   tarefas: TarefaR[];
   projetos: ProjetoR[];
   contratos: ContratoR[];
+  clientes: ClienteR[];
   clientesAtivos: number;
   aprovacoes: number;
   gestor: boolean;
@@ -45,16 +84,22 @@ type Props = {
   truncado: boolean;
 };
 
-const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const num = (n: number, h?: boolean) =>
-  `${n.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}${h ? " h" : ""}`;
-
 function qs(base: string, params: Record<string, string | undefined>) {
   const u = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v) u.set(k, v);
   const s = u.toString();
   return s ? `${base}?${s}` : base;
 }
+
+/** Ordem global (maior primeiro) de uma chave, para cores e "Outros" estáveis. */
+const ordenar = (chaves: string[]) => {
+  const c = new Map<string, number>();
+  for (const k of chaves) c.set(k, (c.get(k) ?? 0) + 1);
+  return [...c.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))
+    .map(([k]) => k);
+};
+const CORES_FATIA = [...SERIE.slice(0, 5), ...Array(40).fill(COR_OUTROS)];
 
 export function PainelInterativo(p: Props) {
   const [sel, setSel] = useState<Sel>(p.selInicial);
@@ -84,6 +129,26 @@ export function PainelInterativo(p: Props) {
     [gravar],
   );
 
+  /** Fatia "Outros": seleciona/desmarca todas as chaves da cauda de uma vez. */
+  const alternarVarios = useCallback(
+    (d: Dim, keys: string[], multi: boolean) => {
+      if (keys.length === 1) return alternar(d, keys[0], multi);
+      setSel((cur) => {
+        const atual = cur[d] ?? [];
+        const todas = keys.every((k) => atual.includes(k));
+        const prox = todas
+          ? atual.filter((k) => !keys.includes(k))
+          : multi
+            ? [...new Set([...atual, ...keys])]
+            : keys;
+        const n = { ...cur, [d]: prox.length ? prox : undefined };
+        gravar(n);
+        return n;
+      });
+    },
+    [alternar, gravar],
+  );
+
   const remover = (d: Dim, key?: string) => {
     setSel((cur) => {
       const rest = key ? (cur[d] ?? []).filter((k) => k !== key) : [];
@@ -99,6 +164,7 @@ export function PainelInterativo(p: Props) {
 
   const contratoPorId = useMemo(() => new Map(p.contratos.map((c) => [c.id, c])), [p.contratos]);
   const projetoPorId = useMemo(() => new Map(p.projetos.map((x) => [x.id, x])), [p.projetos]);
+  const clientePorId = useMemo(() => new Map(p.clientes.map((c) => [c.id, c])), [p.clientes]);
 
   /** Aplica todas as seleções, exceto a dimensão `ignorar` (o gráfico dono mostra tudo e esmaece). */
   const filtrar = useCallback(
@@ -106,9 +172,18 @@ export function PainelInterativo(p: Props) {
       const ativo = (d: Dim) => d !== ignorar && !!sel[d]?.length;
       const tem = (d: Dim, v: string | null | undefined) =>
         !ativo(d) || (v != null && (sel[d] ?? []).includes(v));
-      const ctOk = (ct: string | null) =>
-        !ativo("sit") || tem("sit", ct ? contratoPorId.get(ct)?.sit : null);
-      const pjOk = (x: ProjetoR | undefined) => !!x && tem("pst", x.st) && ctOk(x.ct);
+      const clOk = (cl: string) => {
+        const c = clientePorId.get(cl);
+        return (
+          (!ativo("seg") && !ativo("cidade")) || (!!c && tem("seg", c.seg) && tem("cidade", c.cid))
+        );
+      };
+      const ctOk = (ct: string | null) => {
+        if (!ativo("sit") && !ativo("tipo")) return true;
+        const c = ct ? contratoPorId.get(ct) : undefined;
+        return !!c && tem("sit", c.sit) && tem("tipo", c.tipo);
+      };
+      const pjOk = (x: ProjetoR | undefined) => !!x && tem("pst", x.st) && ctOk(x.ct) && clOk(x.cl);
 
       const tarefas = p.tarefas.filter(
         (t) =>
@@ -124,11 +199,28 @@ export function PainelInterativo(p: Props) {
       const viaProjeto = tarefaAtiva || ativo("pst");
       const cts = new Set(projetos.map((x) => x.ct));
       const contratos = p.contratos.filter(
-        (c) => tem("sit", c.sit) && (!viaProjeto || cts.has(c.id)),
+        (c) =>
+          tem("sit", c.sit) && tem("tipo", c.tipo) && clOk(c.cl) && (!viaProjeto || cts.has(c.id)),
       );
-      return { tarefas, projetos, contratos };
+      const viaContrato = ativo("sit") || ativo("tipo");
+      const comCl = viaProjeto
+        ? new Set(projetos.map((x) => x.cl))
+        : viaContrato
+          ? new Set(contratos.map((c) => c.cl))
+          : null;
+      const clientes = p.clientes.filter((c) => clOk(c.id) && (!comCl || comCl.has(c.id)));
+      return { tarefas, projetos, contratos, clientes };
     },
-    [sel, p.tarefas, p.projetos, p.contratos, contratoPorId, projetoPorId],
+    [
+      sel,
+      p.tarefas,
+      p.projetos,
+      p.contratos,
+      p.clientes,
+      contratoPorId,
+      projetoPorId,
+      clientePorId,
+    ],
   );
 
   const total = filtrar();
@@ -137,7 +229,7 @@ export function PainelInterativo(p: Props) {
   const abertas = total.tarefas.filter((t) => t.aberta);
   const atrasadas = abertas.filter((t) => t.atr);
   const emAnd = total.contratos.filter((c) => c.sit === "em_andamento");
-  const clientes = algum ? new Set(total.projetos.map((x) => x.cl)).size : p.clientesAtivos;
+  const clientes = algum ? total.clientes.length : p.clientesAtivos;
 
   const kpis: { label: string; value: string; href: string }[] = [
     { label: "Clientes ativos", value: String(clientes), href: "/clientes?status=ativo" },
@@ -177,14 +269,12 @@ export function PainelInterativo(p: Props) {
       value: arr.filter((x) => f(x) === c.key).length,
     }));
 
-  const fStatus = filtrar("status").tarefas;
   const fPrio = filtrar("prio").tarefas.filter((t) => t.aberta);
   const fPessoa = filtrar("pessoa").tarefas.filter((t) => t.aberta);
   const fSem = filtrar("sem").tarefas;
   const fPst = filtrar("pst").projetos;
   const fSit = filtrar("sit").contratos;
 
-  const lStatus = contar(fStatus, p.cats.status, (t) => t.s);
   const lPrio = contar(fPrio, p.cats.prio, (t) => t.p);
   const lPessoa: Linha[] = p.pessoas
     .map((x) => ({
@@ -203,6 +293,126 @@ export function PainelInterativo(p: Props) {
     (t) => t.sem,
   );
 
+  // Tarefas por status, empilhadas por projeto (cinco maiores + "Outros projetos").
+  const fStatus = filtrar("status").tarefas;
+  const linhasEmp = useMemo(() => {
+    const por = new Map<string, LinhaEmp>();
+    for (const t of fStatus) {
+      const l = por.get(t.pj) ?? {
+        key: t.pj,
+        label: projetoPorId.get(t.pj)?.nm ?? "Projeto",
+        por: {},
+        total: 0,
+      };
+      l.por[t.s] = (l.por[t.s] ?? 0) + 1;
+      l.total++;
+      por.set(t.pj, l);
+    }
+    const ord = [...por.values()].sort((a, b) => b.total - a.total);
+    const topo = ord.slice(0, 5);
+    const resto = ord.slice(5);
+    if (resto.length) {
+      const o: LinhaEmp = { key: "__outros", label: "Outros projetos", por: {}, total: 0 };
+      for (const l of resto) {
+        o.total += l.total;
+        for (const [s, n] of Object.entries(l.por)) o.por[s] = (o.por[s] ?? 0) + n;
+      }
+      topo.push(o);
+    }
+    return topo;
+  }, [fStatus, projetoPorId]);
+  const coresStatus = Object.fromEntries(p.cats.status.map((c, i) => [c.key, SERIE[i % 8]]));
+
+  // Roscas: segmento (cliente) e categoria de contratação (contrato).
+  const fSeg = filtrar("seg");
+  const valorPorCliente = new Map<string, number>();
+  for (const c of fSeg.contratos)
+    valorPorCliente.set(c.cl, (valorPorCliente.get(c.cl) ?? 0) + (c.valor ?? 0));
+  const vSeg = new Map<string, { value: number; valor: number }>();
+  for (const c of fSeg.clientes) {
+    const v = vSeg.get(c.seg) ?? { value: 0, valor: 0 };
+    v.value++;
+    v.valor += valorPorCliente.get(c.id) ?? 0;
+    vSeg.set(c.seg, v);
+  }
+  const fatSeg = fatiar(
+    ordenar(p.clientes.map((c) => c.seg)),
+    vSeg,
+    CORES_FATIA,
+    sel.seg ?? [],
+    p.gestor,
+  );
+  const vTipo = new Map<string, { value: number; valor: number }>();
+  for (const c of filtrar("tipo").contratos) {
+    const v = vTipo.get(c.tipo) ?? { value: 0, valor: 0 };
+    v.value++;
+    v.valor += c.valor ?? 0;
+    vTipo.set(c.tipo, v);
+  }
+  const fatTipo = fatiar(
+    ordenar(p.contratos.map((c) => c.tipo)),
+    vTipo,
+    CORES_FATIA,
+    sel.tipo ?? [],
+    p.gestor,
+  );
+
+  // Mapa: uma bolha por cidade, só com os clientes visíveis (ignora a própria seleção de cidade).
+  const fCid = filtrar("cidade");
+  const valorCid = new Map<string, number>();
+  for (const c of fCid.contratos) valorCid.set(c.cl, (valorCid.get(c.cl) ?? 0) + (c.valor ?? 0));
+  const porCidade = new Map<string, Cidade & { somaLat: number; somaLng: number }>();
+  for (const c of fCid.clientes) {
+    if (!c.cid || c.lat == null || c.lng == null) continue;
+    const o = porCidade.get(c.cid) ?? {
+      key: c.cid,
+      lat: 0,
+      lng: 0,
+      n: 0,
+      valor: p.gestor ? 0 : null,
+      somaLat: 0,
+      somaLng: 0,
+    };
+    o.n++;
+    o.somaLat += c.lat;
+    o.somaLng += c.lng;
+    if (o.valor != null) o.valor += valorCid.get(c.id) ?? 0;
+    porCidade.set(c.cid, o);
+  }
+  const cidades: Cidade[] = [...porCidade.values()]
+    .map((o) => ({ ...o, lat: o.somaLat / o.n, lng: o.somaLng / o.n }))
+    .sort((a, b) => b.n - a.n || a.key.localeCompare(b.key, "pt-BR"));
+
+  // Medidor de estresse (FR-006-13): equipe toda ou só as pessoas selecionadas.
+  const medidor = useMemo(() => {
+    const esc = sel.pessoa?.length
+      ? p.pessoas.filter((x) => sel.pessoa?.includes(x.key))
+      : p.pessoas;
+    const ids = new Set(esc.map((x) => x.key));
+    const ts = filtrar().tarefas.filter(
+      (t) => t.aberta && (!sel.pessoa?.length || (t.r != null && ids.has(t.r))),
+    );
+    const carga = (arr: TarefaR[]) =>
+      arr.filter((t) => t.jan).reduce((s, t) => s + t.e, 0) +
+      1.5 * arr.filter((t) => t.atr).reduce((s, t) => s + t.e, 0);
+    const cap = esc.reduce((s, x) => s + (x.cap ?? 0), 0) * 4;
+    if (!cap) return { indice: null, nome: null, escopo: "Sem capacidade cadastrada" };
+    const excesso =
+      esc.reduce((s, x) => s + Math.max(0, ts.filter((t) => t.r === x.key).length - 8), 0) /
+      Math.max(1, esc.length);
+    let topo: { nome: string; v: number } | null = null;
+    for (const x of esc) {
+      if (!x.cap) continue;
+      const v = carga(ts.filter((t) => t.r === x.key)) / (x.cap * 4);
+      if (!topo || v > topo.v) topo = { nome: x.label, v };
+    }
+    return {
+      indice: carga(ts) / cap + 0.02 * excesso,
+      nome: topo && topo.v > 0 ? `${topo.nome} (${num(topo.v * 100)}%)` : null,
+      escopo: esc.length === 1 ? esc[0].label : `Equipe (${esc.length} pessoas)`,
+    };
+  }, [filtrar, sel.pessoa, p.pessoas]);
+
   const rotulo = (d: Dim, k: string) =>
     (d === "status"
       ? p.cats.status
@@ -214,25 +424,45 @@ export function PainelInterativo(p: Props) {
             ? p.cats.sit
             : d === "sem"
               ? p.semanas
-              : p.pessoas
+              : d === "pessoa"
+                ? p.pessoas
+                : []
     ).find((c) => c.key === k)?.label ?? k;
 
   const L = (path: string, extra: Record<string, string | undefined> = {}) =>
     qs(path, { ...p.base, ...extra });
+  // Composição 12x8 sem lacunas (linha/coluna início/fim); coluna direita estreita com os visuais compactos.
+  const A = p.gestor
+    ? {
+        mapa: "1/1/5/5",
+        prio: "5/1/7/3",
+        pst: "5/3/7/5",
+        carga: "1/5/4/10",
+        status: "4/5/7/10",
+        sem: "7/1/9/10",
+        medidor: "1/10/3/13",
+        seg: "3/10/5/13",
+        tipo: "5/10/7/13",
+        sit: "7/10/9/13",
+      }
+    : {
+        mapa: "1/1/5/5",
+        prio: "5/1/7/3",
+        pst: "5/3/7/5",
+        carga: "",
+        status: "1/5/7/10",
+        sem: "7/1/9/13",
+        medidor: "",
+        seg: "1/10/3/13",
+        tipo: "3/10/5/13",
+        sit: "5/10/7/13",
+      };
   const charts: ChartProps[] = [
-    {
-      dim: "status",
-      titulo: "Tarefas por status",
-      unidade: "Tarefas",
-      span: p.gestor ? "lg:col-span-6" : "lg:col-span-12",
-      linhas: lStatus,
-      href: L("/trabalho", { aba: "tarefas" }),
-    },
     {
       dim: "prio",
       titulo: "Tarefas abertas por prioridade",
       unidade: "Tarefas",
-      span: "lg:col-span-4",
+      area: A.prio,
       linhas: lPrio,
       href: L("/trabalho", { aba: "tarefas", status: "abertas" }),
     },
@@ -242,7 +472,7 @@ export function PainelInterativo(p: Props) {
             dim: "pessoa" as Dim,
             titulo: "Carga por pessoa",
             unidade: "h",
-            span: "lg:col-span-6",
+            area: A.carga,
             carga: true,
             refLabel: "Capacidade semanal (h)",
             linhas: lPessoa,
@@ -254,7 +484,7 @@ export function PainelInterativo(p: Props) {
       dim: "sit",
       titulo: "Contratos por situação",
       unidade: "Contratos",
-      span: "lg:col-span-4",
+      area: A.sit,
       linhas: lSit,
       href: qs("/trabalho", { aba: "contratos", cliente: p.base.cliente }),
     },
@@ -262,7 +492,7 @@ export function PainelInterativo(p: Props) {
       dim: "pst",
       titulo: "Projetos por status",
       unidade: "Projetos",
-      span: "lg:col-span-4",
+      area: A.pst,
       linhas: lPst,
       href: qs("/trabalho", { aba: "projetos", resp: p.base.resp, cliente: p.base.cliente }),
     },
@@ -270,15 +500,19 @@ export function PainelInterativo(p: Props) {
       dim: "sem",
       titulo: "Tarefas concluídas por semana",
       unidade: "Concluídas",
-      span: "lg:col-span-12",
+      area: A.sem,
       tipo: "linha",
       linhas: lSem,
       href: L("/trabalho", { aba: "tarefas", status: "concluida" }),
     },
   ];
 
+  const selCid = sel.cidade ?? [];
+  const algumCid = selCid.length > 0;
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="painel-viz flex min-h-0 flex-1 flex-col">
+      <style>{VIZ_CSS}</style>
       {p.truncado && (
         <p
           role="status"
@@ -289,12 +523,12 @@ export function PainelInterativo(p: Props) {
         </p>
       )}
 
-      <div className="mb-3 grid shrink-0 gap-2 grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))]">
+      <div className="mb-2 grid shrink-0 gap-2 grid-cols-[repeat(auto-fill,minmax(min(100%,10rem),1fr))]">
         {kpis.map((k) => (
           <Link
             key={k.label}
             href={k.href}
-            className={`rounded-md border border-border bg-surface px-3 py-1.5 hover:bg-muted ${FOCO}`}
+            className={`rounded-md border border-border bg-surface px-3 py-1 hover:bg-muted ${FOCO}`}
           >
             <p className="truncate text-[11px] leading-tight text-text-muted">{k.label}</p>
             <p className="font-title text-lg leading-tight tabular-nums text-text">{k.value}</p>
@@ -336,7 +570,72 @@ export function PainelInterativo(p: Props) {
         </section>
       )}
 
-      <div className="grid gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.75fr)]">
+      <div className="grid grid-flow-dense gap-2 lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[repeat(8,minmax(0,1fr))]">
+        <Bloco
+          titulo="Clientes no mapa"
+          area={A.mapa}
+          vazio={cidades.length === 0 && !algumCid}
+          href="/clientes?status=ativo"
+          tabela={
+            <Tabela
+              cab={["Cidade", "Clientes", ...(p.gestor ? ["Valor"] : [])]}
+              linhas={cidades.map((c) => ({
+                key: c.key,
+                cels: [c.key, num(c.n), ...(p.gestor ? [brl(c.valor ?? 0)] : [])],
+              }))}
+              on={(k) => selCid.includes(k)}
+              algum={algumCid}
+              onLinha={(k, e: Multi) => alternar("cidade", k, ehMulti(e))}
+            />
+          }
+        >
+          <div className="relative min-h-0 flex-1">
+            <div className="absolute inset-0">
+              <MapaClientes
+                cidades={cidades}
+                selecionados={selCid}
+                onToggle={(k, m) => alternar("cidade", k, m)}
+                fmtValor={brl}
+              />
+            </div>
+          </div>
+        </Bloco>
+
+        {p.gestor && (
+          <MedidorBloco
+            area={A.medidor}
+            indice={medidor.indice}
+            maisCarregada={medidor.nome}
+            escopo={medidor.escopo}
+          />
+        )}
+        <RoscaBloco
+          titulo="Clientes por segmento"
+          unidade="Clientes"
+          area={A.seg}
+          fatias={fatSeg}
+          selecionados={sel.seg ?? []}
+          onToggle={(k, m) => alternarVarios("seg", k, m)}
+        />
+        <RoscaBloco
+          titulo="Contratos por categoria"
+          unidade="Contratos"
+          area={A.tipo}
+          fatias={fatTipo}
+          selecionados={sel.tipo ?? []}
+          onToggle={(k, m) => alternarVarios("tipo", k, m)}
+          href={qs("/trabalho", { aba: "contratos", cliente: p.base.cliente })}
+        />
+        <EmpilhadasBloco
+          titulo="Tarefas por status e projeto"
+          area={A.status}
+          href={L("/trabalho", { aba: "tarefas" })}
+          linhas={linhasEmp}
+          cats={p.cats.status}
+          cores={coresStatus}
+          selecionados={sel.status ?? []}
+          onToggle={(k, m) => alternar("status", k, m)}
+        />
         {charts.map((c) => (
           <ChartCard
             key={c.dim}
@@ -346,7 +645,7 @@ export function PainelInterativo(p: Props) {
           />
         ))}
       </div>
-      <p className="mt-2 shrink-0 text-xs text-text-muted">
+      <p className="mt-1 shrink-0 text-[11px] text-text-muted">
         Clique para filtrar os demais gráficos e indicadores. Ctrl ou Shift soma valores; clicar de
         novo desmarca. Aprovações pendentes não são afetadas pelos filtros.
       </p>
@@ -364,15 +663,13 @@ type ChartProps = {
   tipo?: "barras" | "linha";
   refLabel?: string;
   href: string;
-  span: string;
+  area: string;
   /** barras de carga: marcador de capacidade e destaque acima de 100% */
   carga?: boolean;
 };
 
-// Azul validado (contraste >= 3:1 sobre a superfície); esmaecido = mesma cor a 25%.
 const COR = "var(--viz-1)";
 const COR_REF = "var(--color-text, #0e1726)";
-const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent";
 
 function ChartCard({
   titulo,
@@ -381,7 +678,7 @@ function ChartCard({
   tipo = "barras",
   refLabel,
   href,
-  span,
+  area,
   carga,
   selecionados,
   onToggle,
@@ -389,102 +686,58 @@ function ChartCard({
   selecionados: string[];
   onToggle: (key: string, multi: boolean) => void;
 }) {
-  const [tabela, setTabela] = useState(false);
   const h = unidade === "h";
   const max = Math.max(1, ...linhas.map((l) => Math.max(l.value, l.ref ?? 0)));
   const vazio = linhas.every((l) => l.value === 0 && !l.ref);
   const algum = selecionados.length > 0;
-  const click = (k: string) => (e: { ctrlKey: boolean; shiftKey: boolean; metaKey: boolean }) =>
-    onToggle(k, e.ctrlKey || e.shiftKey || e.metaKey);
+  const click = (k: string) => (e: Multi) => onToggle(k, ehMulti(e));
   const on = (k: string) => selecionados.includes(k);
   const aria = (l: Linha) => `${l.label}: ${num(l.value, h)}`;
 
   return (
-    <section
-      className={`flex min-h-0 flex-col overflow-hidden rounded-md border border-border bg-surface p-3 ${span} [--viz-1:#2a78d6] dark:[--viz-1:#3987e5]`}
+    <Bloco
+      titulo={titulo}
+      area={area}
+      href={href}
+      vazio={vazio && !algum}
+      tabela={
+        <Tabela
+          cab={["Categoria", unidade, ...(refLabel ? [refLabel] : [])]}
+          linhas={linhas.map((l) => ({
+            key: l.key,
+            cels: [
+              l.label,
+              num(l.value, h),
+              ...(refLabel ? [l.ref == null ? "—" : num(l.ref, h)] : []),
+            ],
+          }))}
+          on={on}
+          algum={algum}
+          onLinha={(k, e) => click(k)(e)}
+        />
+      }
     >
-      <header className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <h2 className="font-title text-base text-text">{titulo}</h2>
-        <div className="flex items-center gap-1 text-xs">
-          {(["Gráfico", "Tabela"] as const).map((nome) => {
-            const ativo = (nome === "Tabela") === tabela;
-            return (
-              <button
-                key={nome}
-                type="button"
-                aria-pressed={ativo}
-                onClick={() => setTabela(nome === "Tabela")}
-                className={`rounded px-2 py-1 ${FOCO} ${ativo ? "bg-accent text-accent-foreground" : "text-text-muted hover:bg-muted"}`}
-              >
-                {nome}
-              </button>
-            );
-          })}
-          <Link href={href} className={`rounded px-2 py-1 text-text-muted underline ${FOCO}`}>
-            Abrir lista
-          </Link>
-        </div>
-      </header>
-
-      {vazio && !algum ? (
-        <p className="py-6 text-center text-sm text-text-muted">
-          Sem dados para os filtros selecionados.
-        </p>
-      ) : tabela ? (
-        <div className="min-h-0 flex-1 overflow-auto">
-          <table className="w-full text-sm tabular-nums">
-            <thead>
-              <tr className="border-b border-border text-left text-xs text-text-muted">
-                <th className="py-1 font-normal">Categoria</th>
-                <th className="py-1 text-right font-normal">{unidade}</th>
-                {refLabel && <th className="py-1 text-right font-normal">{refLabel}</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {linhas.map((l) => (
-                <tr key={l.key} className="border-b border-border/60 last:border-0">
-                  <td className="py-1">
-                    <button
-                      type="button"
-                      aria-pressed={on(l.key)}
-                      onClick={click(l.key)}
-                      className={`rounded px-1 text-left text-text ${FOCO} ${on(l.key) ? "bg-muted font-medium underline" : "hover:bg-muted"} ${algum && !on(l.key) ? "opacity-60" : ""}`}
-                    >
-                      {l.label}
-                    </button>
-                  </td>
-                  <td className="py-1 text-right text-text">{num(l.value, h)}</td>
-                  {refLabel && (
-                    <td className="py-1 text-right text-text">
-                      {l.ref == null ? "—" : num(l.ref, h)}
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : tipo === "linha" ? (
+      {tipo === "linha" ? (
         <Serie linhas={linhas} max={max} algum={algum} on={on} click={click} />
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+        <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
           {linhas.map((l) => (
-            <li key={l.key} className="min-h-7 flex-1">
+            <li key={l.key} className="min-h-6 flex-1">
               <button
                 type="button"
                 aria-pressed={on(l.key)}
                 aria-label={aria(l)}
-                onClick={click(l.key)}
+                onClick={(e) => click(l.key)(e)}
                 className={`flex h-full w-full items-center rounded text-left hover:bg-muted ${FOCO}`}
               >
-                <span className="grid w-full grid-cols-[minmax(4rem,8rem)_1fr_auto] items-center gap-3 text-xs">
+                <span className="grid w-full grid-cols-[minmax(3rem,7rem)_1fr_auto] items-center gap-2 text-xs">
                   <span
                     className={`truncate text-text-muted ${on(l.key) ? "font-medium text-text" : ""}`}
                     title={l.label}
                   >
                     {l.label}
                   </span>
-                  <span className="relative block h-4">
+                  <span className="relative block h-[min(100%,1rem)] min-h-3">
                     <span
                       className={`absolute inset-y-0 left-0 rounded-r-[4px] ${on(l.key) ? "outline outline-2 outline-offset-1 outline-text" : ""}`}
                       style={{
@@ -513,8 +766,8 @@ function ChartCard({
           ))}
         </ul>
       )}
-      {refLabel && !tabela && !vazio && (
-        <p className="mt-2 flex shrink-0 items-center gap-4 text-xs text-text-muted">
+      {refLabel && (
+        <p className="mt-1 flex shrink-0 items-center gap-4 text-[11px] text-text-muted">
           <span className="flex items-center gap-1">
             <span className="inline-block size-2 rounded-sm" style={{ background: COR }} />
             {unidade}
@@ -525,7 +778,7 @@ function ChartCard({
           </span>
         </p>
       )}
-    </section>
+    </Bloco>
   );
 }
 
@@ -577,6 +830,11 @@ function Serie({
           y2={H - P}
           stroke="currentColor"
           className="text-border"
+        />
+        <polygon
+          points={`${x(0)},${H - P} ${pts} ${x(linhas.length - 1)},${H - P}`}
+          fill={COR}
+          opacity={algum ? 0.06 : 0.14}
         />
         <polyline
           points={pts}
