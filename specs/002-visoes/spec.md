@@ -58,6 +58,20 @@ Projetos, Contratos e Tarefas hoje são três áreas soltas com o mesmo dado. Pa
 - **FR-002-30**: Visão **Gantt** nas Tarefas (ao lado de Kanban, Lista e Tabela, `?visao=gantt`), no escopo escolhido (projeto, contrato, cliente ou tudo). Barras de `data_inicio` a `data_prazo` por tarefa, agrupadas por projeto (linhas colapsáveis), com subtarefas aninhadas. Escalas Dia / Semana / Mês / Trimestre com zoom, linha de "hoje", fim de semana sombreado, barra colorida pelo status e com preenchimento de progresso (checklist ou subtarefas entregues), marca de atraso. Tarefa sem datas aparece numa lista "Sem datas" a ser agendada. Arrastar a barra move as datas; arrastar as bordas redimensiona (grava no banco, com evento e erro visível); convidado só lê. Setas de dependência para `bloqueada_por_id`. Clicar na barra abre o painel da tarefa. Respeita FR-002-00 (cabe na viewport; rolagem só na grade e na escala).
 - **FR-002-31**: O item "Tudo" da árvore (nível raiz) DEVE ser compacto, do mesmo tamanho e estilo dos demais nós (linha única, ícone pequeno, contador), nunca um botão grande ou destacado.
 
+## Modal da tarefa estilo Trello
+
+- **FR-002-32**: O modal da tarefa tem duas colunas: à esquerda o conteúdo (título editável no lugar, descrição, checklists, anexos, comentários e atividade); à direita a barra de ações "Adicionar" e "Ações", como no Trello. Cabe na viewport (FR-002-00), com rolagem só na coluna de conteúdo.
+- **FR-002-33**: **Membros**: mais de um responsável por tarefa (tabela `tarefa_membro`), avatares no cartão e no modal, adicionar e remover por busca; `responsavel_id` continua como responsável principal.
+- **FR-002-34**: **Etiquetas**: etiquetas coloridas com nome por projeto ou organização (`etiqueta`, `tarefa_etiqueta`), criar, editar, aplicar e remover; aparecem no cartão e servem de filtro e de agrupamento. Cor nunca é o único sinal (nome visível ou título acessível).
+- **FR-002-35**: **Datas**: início, entrega com hora opcional, lembrete, e marcar como entregue; estado visual (atrasada, vence em breve, entregue) no cartão e no modal.
+- **FR-002-36**: **Checklists múltiplas** com título, itens com responsável e prazo opcionais, converter item em tarefa (subtarefa), ocultar itens marcados, barra de progresso por checklist.
+- **FR-002-37**: **Anexos**: enviar arquivo (Supabase Storage, bucket privado com RLS por org) ou colar link; miniaturas para imagens; definir imagem como **capa** do cartão; excluir. Só `https://` em links.
+- **FR-002-38**: **Comentários**: editor com formatação básica (negrito, itálico, listas, código, links), **menção `@pessoa`** que notifica, responder, editar e excluir o próprio comentário (com marca "editado"), reações com emoji, colar imagem. Comentários e atividade na mesma linha do tempo, com alternância Comentários / Atividade / Tudo.
+- **FR-002-39**: **Ações**: copiar tarefa (com checklists e etiquetas), mover para outro projeto ou outra coluna, arquivar/restaurar (soft delete), excluir, copiar link da tarefa, **seguir** a tarefa (notificações de comentário e mudança) e votar.
+- **FR-002-40**: **Descrição** em Markdown com pré-visualização; edição inline com salvar/cancelar; histórico via eventos.
+- **FR-002-41**: **Campos personalizados** básicos por projeto (texto, número, data, lista) exibidos no modal; opcional nesta versão.
+- **FR-002-42**: Toda alteração do modal gera evento (spec 003, trigger no banco) e respeita papel: convidado somente leitura; sem valores financeiros no log.
+
 ## Critérios de aceite
 
 1. Arrastar um card muda o status e persiste após recarregar.
@@ -70,3 +84,5 @@ Projetos, Contratos e Tarefas hoje são três áreas soltas com o mesmo dado. Pa
 8. Abrir `/contratos/ID` redireciona para `/trabalho?contrato=ID`.
 9. Na visão Gantt, arrastar uma barra para a direita muda `data_inicio` e `data_prazo` e persiste após recarregar.
 10. O nó "Tudo" da árvore tem a mesma altura dos demais nós.
+11. No modal, adicionar um segundo membro, uma etiqueta e um anexo atualiza o cartão no kanban sem recarregar a página.
+12. Comentário com `@pessoa` registra a menção e aparece na linha do tempo; editar mostra "editado".
