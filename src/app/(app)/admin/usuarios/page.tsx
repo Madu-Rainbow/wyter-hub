@@ -1,3 +1,5 @@
+import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { ConvidarForm } from "@front/components/usuarios/convidar-form";
 import { ESTADOS, PAPEIS, type Usuario } from "@front/components/usuarios/tipos";
 import { UsuarioLinha } from "@front/components/usuarios/usuario-linha";
@@ -103,25 +105,27 @@ export default async function UsuariosPage({
           aria-label="Buscar"
           className={`${sel} w-64`}
         />
-        <select name="papel" defaultValue={papel} aria-label="Papel" className={sel}>
-          <option value="">Todos os papéis</option>
-          {PAPEIS.map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </select>
-        <select name="estado" defaultValue={estado} aria-label="Estado" className={sel}>
-          <option value="">Todos os estados</option>
-          {Object.entries(ESTADOS).map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </select>
-        <button type="submit" className={`${sel} px-3 hover:bg-secondary`}>
+        <Combobox
+          name="papel"
+          defaultValue={papel}
+          aria-label="Papel"
+          placeholder="Todos os papéis"
+          clearable
+          className="w-48"
+          options={PAPEIS.map(([value, label]) => ({ value, label }))}
+        />
+        <Combobox
+          name="estado"
+          defaultValue={estado}
+          aria-label="Estado"
+          placeholder="Todos os estados"
+          clearable
+          className="w-48"
+          options={Object.entries(ESTADOS).map(([value, label]) => ({ value, label }))}
+        />
+        <Button type="submit" variant="secondary">
           Filtrar
-        </button>
+        </Button>
       </form>
 
       <ul className="min-h-0 flex-1 overflow-y-auto rounded-md border border-border bg-surface">

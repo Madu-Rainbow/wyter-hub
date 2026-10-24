@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { Input } from "@front/components/ui/input";
 import {
   COR,
@@ -40,7 +41,6 @@ const VAZIO: Filtros = {
   de: "",
   ate: "",
 };
-const sel = "h-9 min-w-0 rounded-md border border-border bg-surface px-2 text-sm text-text";
 
 // nodeLabel da lib vira innerHTML: escapar dados do usuario.
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -278,8 +278,9 @@ export function DatawareGrafo({
     return out;
   }, [selId, dados, selNo]);
 
-  const set = (k: keyof Filtros) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
-    setF((p) => ({ ...p, [k]: e.target.value }));
+  const setV = (k: keyof Filtros) => (v: string) => setF((p) => ({ ...p, [k]: v }));
+  const set = (k: keyof Filtros) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setV(k)(e.target.value);
   const sob = (id: string) => dados.nos.get(id);
   const raio = (id: string) => 3 + Math.sqrt(grau.get(id) ?? 0) * 1.6;
 
@@ -297,7 +298,7 @@ export function DatawareGrafo({
           />
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           aria-expanded={filtrosAbertos}
           onClick={() => setFiltrosAbertos((v) => !v)}
@@ -305,7 +306,7 @@ export function DatawareGrafo({
           <SlidersHorizontal className="size-4" /> Filtros{filtrando ? " *" : ""}
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           className="lg:hidden"
           aria-expanded={painel}
@@ -318,34 +319,26 @@ export function DatawareGrafo({
         className={`${filtrosAbertos ? "flex" : "hidden"} max-h-[30dvh] w-full flex-wrap items-center gap-2 overflow-y-auto`}
       >
         {(["cliente", "contrato", "projeto", "pessoa"] as const).map((t) => (
-          <select
+          <Combobox
             key={t}
-            className={`${sel} max-w-40`}
+            className="w-40"
             value={f[t]}
-            onChange={set(t)}
+            onValueChange={setV(t)}
+            placeholder={`${TIPO_LABEL[t]}: todos`}
+            clearable
             aria-label={`Filtrar por ${TIPO_LABEL[t].toLowerCase()}`}
-          >
-            <option value="">{TIPO_LABEL[t]}: todos</option>
-            {opcoes(t).map((n) => (
-              <option key={n.id} value={n.id}>
-                {n.rotulo}
-              </option>
-            ))}
-          </select>
+            options={opcoes(t).map((n) => ({ value: n.id, label: n.rotulo }))}
+          />
         ))}
-        <select
-          className={sel}
+        <Combobox
+          className="w-40"
           value={f.status}
-          onChange={set("status")}
+          onValueChange={setV("status")}
+          placeholder="Status: todos"
+          clearable
           aria-label="Filtrar por status"
-        >
-          <option value="">Status: todos</option>
-          {statusOpc.map((s) => (
-            <option key={s} value={s}>
-              {s.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
+          options={statusOpc.map((v) => ({ value: v, label: v.replace(/_/g, " ") }))}
+        />
         <Input
           type="date"
           value={f.de}
@@ -361,7 +354,7 @@ export function DatawareGrafo({
           className="w-36"
         />
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={carregarLogs}
           disabled={!(f.pessoa || f.cliente || f.de || f.ate)}
@@ -378,19 +371,14 @@ export function DatawareGrafo({
           />
           Só vizinhança
         </label>
-        <select
-          className={sel}
-          value={prof}
-          onChange={(e) => setProf(Number(e.target.value))}
+        <Combobox
+          className="w-32"
+          value={String(prof)}
+          onValueChange={(v) => setProf(Number(v))}
           disabled={!solo}
           aria-label="Profundidade"
-        >
-          {[1, 2, 3].map((p) => (
-            <option key={p} value={p}>
-              Nível {p}
-            </option>
-          ))}
-        </select>
+          options={[1, 2, 3].map((p) => ({ value: String(p), label: `Nível ${p}` }))}
+        />
         {filtrando && (
           <Button
             variant="ghost"
@@ -465,9 +453,11 @@ export function DatawareGrafo({
             <fieldset className="absolute bottom-2 left-2 flex max-w-[80%] flex-wrap gap-1 rounded-md border border-border bg-surface/95 p-1.5">
               <legend className="sr-only">Legenda e filtro por tipo</legend>
               {TIPOS.map((t) => (
-                <button
+                <Button
                   key={t.tipo}
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   aria-pressed={!ocultos.has(t.tipo)}
                   onClick={() =>
                     setOcultos((p) => {
@@ -476,11 +466,11 @@ export function DatawareGrafo({
                       return s;
                     })
                   }
-                  className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-text hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent ${ocultos.has(t.tipo) ? "opacity-40" : ""}`}
+                  className={ocultos.has(t.tipo) ? "opacity-40" : ""}
                 >
                   <span className="size-2.5 rounded-full" style={{ background: t.cor }} />
                   {t.label}
-                </button>
+                </Button>
               ))}
             </fieldset>
           </div>
@@ -547,17 +537,19 @@ export function DatawareGrafo({
                   const n = sob(v);
                   return n ? (
                     <li key={v}>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => escolher(n)}
-                        className="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left text-sm hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent"
+                        className="w-full justify-start px-1.5 font-normal"
                       >
                         <span
                           className="size-2.5 shrink-0 rounded-full"
                           style={{ background: COR[n.tipo] }}
                         />
                         <span className="truncate">{n.rotulo}</span>
-                      </button>
+                      </Button>
                     </li>
                   ) : null;
                 })}
@@ -575,11 +567,13 @@ export function DatawareGrafo({
             <ul className="space-y-0.5">
               {resultados.map((n) => (
                 <li key={n.id}>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => escolher(n)}
                     aria-current={n.id === selId}
-                    className="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left text-sm hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent"
+                    className="w-full justify-start px-1.5 font-normal"
                   >
                     <span
                       className="size-2.5 shrink-0 rounded-full"
@@ -587,7 +581,7 @@ export function DatawareGrafo({
                     />
                     <span className="truncate">{n.rotulo}</span>
                     <span className="ml-auto text-xs text-text-muted">{TIPO_LABEL[n.tipo]}</span>
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

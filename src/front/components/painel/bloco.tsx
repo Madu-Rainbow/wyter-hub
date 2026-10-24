@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@front/components/ui/button";
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
@@ -65,21 +66,23 @@ export function Bloco({
           {(["Gráfico", "Tabela"] as const).map((nome) => {
             const ativo = (nome === "Tabela") === verTabela;
             return (
-              <button
+              <Button
                 key={nome}
                 type="button"
+                variant={ativo ? "primary" : "ghost"}
+                size="sm"
                 aria-pressed={ativo}
                 onClick={() => setVerTabela(nome === "Tabela")}
-                className={`rounded px-1.5 py-0.5 ${FOCO} ${ativo ? "bg-accent text-accent-foreground" : "text-text-muted hover:bg-muted"}`}
+                className="h-6 px-1.5 text-[11px]"
               >
                 {nome}
-              </button>
+              </Button>
             );
           })}
           {href && (
-            <Link href={href} className={`rounded px-1.5 py-0.5 text-text-muted underline ${FOCO}`}>
-              Abrir lista
-            </Link>
+            <Button variant="link" size="sm" className="h-6 px-1.5 text-[11px]" asChild>
+              <Link href={href}>Abrir lista</Link>
+            </Button>
           )}
         </div>
       </header>

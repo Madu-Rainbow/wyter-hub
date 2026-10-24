@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { useActionState } from "react";
 
 type Props = {
@@ -36,20 +37,15 @@ export function ContratoForm({ action, clientes, contrato, clienteInicial, submi
         <label htmlFor="cliente_id" className={label}>
           Cliente *
         </label>
-        <select
+        <Combobox
           id="cliente_id"
           name="cliente_id"
           required
+          aria-label="Cliente"
+          placeholder="Selecione..."
           defaultValue={contrato?.cliente_id ?? clienteInicial ?? ""}
-          className={input}
-        >
-          <option value="">Selecione...</option>
-          {clientes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
-            </option>
-          ))}
-        </select>
+          options={clientes.map((c) => ({ value: c.id, label: c.label }))}
+        />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -132,7 +128,7 @@ export function ContratoForm({ action, clientes, contrato, clienteInicial, submi
         </div>
       </div>
       <div className="flex justify-end pt-2">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" loading={pending}>
           {pending ? "Salvando..." : submitLabel}
         </Button>
       </div>

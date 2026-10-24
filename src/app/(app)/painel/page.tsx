@@ -1,4 +1,6 @@
 import { PainelInterativo, type TarefaR } from "@front/components/painel/painel-interativo";
+import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { selDeParams } from "@front/lib/painel-sel";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { ABERTAS, hojeISO, statusLabels } from "@front/lib/tarefas";
@@ -218,7 +220,7 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
     sit: SITUACOES.map(([key, label]) => ({ key, label })),
   };
 
-  const sel = "rounded border border-border bg-surface px-2 py-1 text-sm text-text";
+  const sel = "h-9 rounded border border-border bg-surface px-2 py-1 text-sm text-text";
 
   return (
     <div className="flex flex-col lg:h-full lg:min-h-0">
@@ -228,39 +230,45 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
       </p>
 
       <form className="mb-3 flex flex-wrap items-end gap-3 text-xs text-text-muted" method="get">
-        <label className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           Cliente
-          <select name="cliente" defaultValue={f.cliente ?? ""} className={sel}>
-            <option value="">Todos</option>
-            {(listaClientesR.data ?? []).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome_fantasia ?? c.razao_social}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
+          <Combobox
+            name="cliente"
+            defaultValue={f.cliente ?? ""}
+            aria-label="Cliente"
+            placeholder="Todos"
+            clearable
+            className="w-52"
+            options={(listaClientesR.data ?? []).map((c) => ({
+              value: c.id,
+              label: c.nome_fantasia ?? c.razao_social,
+            }))}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
           Projeto
-          <select name="projeto" defaultValue={f.projeto ?? ""} className={sel}>
-            <option value="">Todos</option>
-            {(listaProjetosR.data ?? []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
+          <Combobox
+            name="projeto"
+            defaultValue={f.projeto ?? ""}
+            aria-label="Projeto"
+            placeholder="Todos"
+            clearable
+            className="w-52"
+            options={(listaProjetosR.data ?? []).map((p) => ({ value: p.id, label: p.nome }))}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
           Responsável
-          <select name="resp" defaultValue={f.resp ?? ""} className={sel}>
-            <option value="">Todos</option>
-            {pessoas.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-        </label>
+          <Combobox
+            name="resp"
+            defaultValue={f.resp ?? ""}
+            aria-label="Responsável"
+            placeholder="Todos"
+            clearable
+            className="w-52"
+            options={pessoas.map((p) => ({ value: p.id, label: p.nome }))}
+          />
+        </div>
         <label className="flex flex-col gap-1">
           Criadas de
           <input type="date" name="de" defaultValue={f.de ?? ""} className={sel} />
@@ -269,15 +277,10 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
           até
           <input type="date" name="ate" defaultValue={f.ate ?? ""} className={sel} />
         </label>
-        <button
-          type="submit"
-          className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground hover:bg-accent-hover"
-        >
-          Aplicar
-        </button>
-        <Link href="/painel" className="px-2 py-1.5 text-sm text-text-muted underline">
-          Limpar
-        </Link>
+        <Button type="submit">Aplicar</Button>
+        <Button variant="ghost" asChild>
+          <Link href="/painel">Limpar</Link>
+        </Button>
       </form>
 
       <PainelInterativo

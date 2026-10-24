@@ -1,6 +1,8 @@
 "use client";
 
+import { Button } from "@front/components/ui/button";
 import { DIMS, type Dim, PARAM, type Sel } from "@front/lib/painel-sel";
+import { X } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -549,24 +551,23 @@ export function PainelInterativo(p: Props) {
                 className="inline-flex items-center gap-1 rounded-full border border-border bg-surface py-0.5 pl-3 pr-1 text-text"
               >
                 <span className="text-text-muted">{DIM_LABEL[d]}:</span> {rotulo(d, k)}
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => remover(d, k)}
                   aria-label={`Remover filtro ${DIM_LABEL[d]}: ${rotulo(d, k)}`}
-                  className="rounded-full px-1.5 text-text-muted hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                  title="Remover filtro"
+                  className="size-5 rounded-full text-text-muted"
                 >
-                  ×
-                </button>
+                  <X className="size-3" aria-hidden />
+                </Button>
               </span>
             )),
           )}
-          <button
-            type="button"
-            onClick={limpar}
-            className="px-2 py-1 text-text-muted underline focus-visible:outline-2 focus-visible:outline-accent"
-          >
+          <Button type="button" variant="link" size="sm" onClick={limpar}>
             Limpar tudo
-          </button>
+          </Button>
         </section>
       )}
 

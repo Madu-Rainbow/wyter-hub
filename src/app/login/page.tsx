@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@front/components/ui/button";
 import { createClient } from "@front/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -91,13 +92,9 @@ export default function LoginPage() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-          >
+          <Button type="submit" loading={loading} className="w-full">
             {loading ? "Entrando..." : "Entrar"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-4 text-center text-xs text-text-muted">

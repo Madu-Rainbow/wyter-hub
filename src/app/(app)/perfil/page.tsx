@@ -86,7 +86,7 @@ export default async function PerfilPage({
         </Button>
       </form>
       <form action="/api/auth/sign-out" method="POST" className="mt-6">
-        <Button type="submit" variant="outline" size="sm" className="gap-2">
+        <Button type="submit" variant="secondary" size="sm" className="gap-2">
           <LogOut className="size-3.5" />
           Sair
         </Button>

@@ -1,4 +1,5 @@
 import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { Search } from "lucide-react";
 import Link from "next/link";
 
@@ -20,8 +21,6 @@ export function ListFilters({
   const hp = new URLSearchParams();
   for (const [k, v] of Object.entries(hidden)) if (v) hp.set(k, v);
   const limpar = hp.size ? `${basePath}?${hp}` : basePath;
-  const sel =
-    "h-9 rounded-md border border-border bg-surface px-2 text-sm text-text focus-visible:outline-2 focus-visible:outline-accent";
   return (
     <form method="get" action={basePath} className="mb-4 flex flex-wrap items-end gap-2">
       {Object.entries(hidden).map(
@@ -39,22 +38,18 @@ export function ListFilters({
         />
       </div>
       {campos.map((c) => (
-        <select
+        <Combobox
           key={c.name}
           name={c.name}
           defaultValue={c.value ?? ""}
           aria-label={c.label}
-          className={sel}
-        >
-          <option value="">{c.label}: todos</option>
-          {c.options.map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </select>
+          placeholder={`${c.label}: todos`}
+          clearable
+          className="w-48"
+          options={c.options.map(([value, label]) => ({ value, label }))}
+        />
       ))}
-      <Button type="submit" size="sm" variant="outline">
+      <Button type="submit" variant="secondary">
         Filtrar
       </Button>
       {ativo && (

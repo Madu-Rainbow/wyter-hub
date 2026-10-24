@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { useActionState, useState } from "react";
 
 type Option = { id: string; label: string };
@@ -97,39 +98,29 @@ export function ProjetoForm({
           <label htmlFor="cliente_id" className="mb-1 block text-sm font-medium text-text">
             Cliente <span className="text-danger">*</span>
           </label>
-          <select
+          <Combobox
             id="cliente_id"
             name="cliente_id"
             required
+            aria-label="Cliente"
+            placeholder="Selecione..."
             value={clienteId}
-            onChange={(e) => setClienteId(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none"
-          >
-            <option value="">Selecione...</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+            onValueChange={setClienteId}
+            options={clientes.map((c) => ({ value: c.id, label: c.label }))}
+          />
         </div>
 
         <div>
           <label htmlFor="tipo" className="mb-1 block text-sm font-medium text-text">
             Tipo
           </label>
-          <select
+          <Combobox
             id="tipo"
             name="tipo"
+            aria-label="Tipo"
             defaultValue={defaults.tipo ?? "pontual"}
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none"
-          >
-            {TIPOS.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+            options={TIPOS}
+          />
         </div>
       </div>
 
@@ -177,37 +168,28 @@ export function ProjetoForm({
           <label htmlFor="status" className="mb-1 block text-sm font-medium text-text">
             Status
           </label>
-          <select
+          <Combobox
             id="status"
             name="status"
+            aria-label="Status"
             defaultValue={defaults.status ?? "planejado"}
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none"
-          >
-            {STATUS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+            options={STATUS}
+          />
         </div>
 
         <div>
           <label htmlFor="responsavel_id" className="mb-1 block text-sm font-medium text-text">
             Responsável
           </label>
-          <select
+          <Combobox
             id="responsavel_id"
             name="responsavel_id"
+            aria-label="Responsável"
+            placeholder="Nenhum"
+            clearable
             defaultValue={defaults.responsavel_id}
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none"
-          >
-            <option value="">Nenhum</option>
-            {pessoas.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+            options={pessoas.map((p) => ({ value: p.id, label: p.label }))}
+          />
         </div>
       </div>
 
@@ -215,46 +197,37 @@ export function ProjetoForm({
         <label htmlFor="parent_id" className="mb-1 block text-sm font-medium text-text">
           Projeto pai (opcional)
         </label>
-        <select
+        <Combobox
           id="parent_id"
           name="parent_id"
+          aria-label="Projeto pai"
+          placeholder="Nenhum"
+          clearable
           defaultValue={defaults.parent_id}
-          className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none"
-        >
-          <option value="">Nenhum</option>
-          {projetos.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.label}
-            </option>
-          ))}
-        </select>
+          options={projetos.map((p) => ({ value: p.id, label: p.label }))}
+        />
       </div>
 
       <div>
         <label htmlFor="contrato_id" className="mb-1 block text-sm font-medium text-text">
           Contrato <span className="text-danger">*</span>
         </label>
-        <select
+        <Combobox
           key={clienteId}
           id="contrato_id"
           name="contrato_id"
           required
+          aria-label="Contrato"
+          placeholder="Selecione..."
           defaultValue={defaults.contrato_id}
-          className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none"
-        >
-          <option value="">Selecione...</option>
-          {contratos
+          options={contratos
             .filter((c) => c.cliente_id === clienteId)
-            .map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-        </select>
+            .map((c) => ({ value: c.id, label: c.label }))}
+        />
       </div>
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" loading={isPending}>
           {isPending ? "Salvando..." : submitLabel}
         </Button>
       </div>

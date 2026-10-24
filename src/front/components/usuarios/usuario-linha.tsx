@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { Input } from "@front/components/ui/input";
 import { createClient } from "@front/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -109,12 +110,12 @@ export function UsuarioLinha({ u }: { u: Usuario }) {
         <div className="flex flex-wrap gap-1">
           {u.estado === "convidado" && (
             <>
-              <Button size="xs" variant="outline" onClick={copiarLink}>
+              <Button size="sm" variant="secondary" onClick={copiarLink}>
                 Copiar link
               </Button>
               <Button
-                size="xs"
-                variant="outline"
+                size="sm"
+                variant="secondary"
                 disabled={pendente}
                 onClick={() => {
                   if (confirm(`Revogar o convite de ${u.email}?`))
@@ -126,14 +127,14 @@ export function UsuarioLinha({ u }: { u: Usuario }) {
             </>
           )}
           {u.id && (
-            <Button size="xs" variant="outline" onClick={() => setEditando(!editando)}>
+            <Button size="sm" variant="secondary" onClick={() => setEditando(!editando)}>
               Editar
             </Button>
           )}
           {u.id && u.estado !== "convidado" && !u.souEu && (
             <Button
-              size="xs"
-              variant="outline"
+              size="sm"
+              variant="secondary"
               disabled={pendente}
               onClick={() => rodar(() => atualizar({ ...atual, ativo: u.estado === "inativo" }))}
             >
@@ -144,18 +145,13 @@ export function UsuarioLinha({ u }: { u: Usuario }) {
       </div>
       {editando && (
         <form onSubmit={salvar} className="mt-2 flex flex-wrap items-center gap-2">
-          <select
+          <Combobox
             name="papel"
             defaultValue={u.papel}
             aria-label="Papel"
-            className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
-          >
-            {PAPEIS.map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
+            className="w-48"
+            options={PAPEIS.map(([value, label]) => ({ value, label }))}
+          />
           <Input name="cargo" defaultValue={u.cargo ?? ""} placeholder="Cargo" className="w-48" />
           <Input
             name="capacidade"
@@ -166,7 +162,7 @@ export function UsuarioLinha({ u }: { u: Usuario }) {
             placeholder="h/semana"
             className="w-28"
           />
-          <Button type="submit" size="sm" disabled={pendente}>
+          <Button type="submit" size="sm" loading={pendente}>
             Salvar
           </Button>
         </form>

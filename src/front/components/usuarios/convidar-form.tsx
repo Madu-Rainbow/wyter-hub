@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@front/components/ui/button";
+import { Combobox } from "@front/components/ui/combobox";
 import { Input } from "@front/components/ui/input";
 import { createClient } from "@front/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -43,18 +44,13 @@ export function ConvidarForm() {
     >
       <Input name="email" type="email" required placeholder="E-mail" className="sm:col-span-2" />
       <Input name="nome" placeholder="Nome (opcional)" className="sm:col-span-2" />
-      <select
+      <Combobox
         name="papel"
         defaultValue="analista"
         aria-label="Papel"
-        className="h-9 rounded-md border border-input bg-transparent px-2 text-sm sm:col-span-2"
-      >
-        {PAPEIS.map(([v, l]) => (
-          <option key={v} value={v}>
-            {l}
-          </option>
-        ))}
-      </select>
+        className="sm:col-span-2"
+        options={PAPEIS.map(([value, label]) => ({ value, label }))}
+      />
       <Input name="cargo" placeholder="Cargo" className="sm:col-span-3" />
       <Input
         name="capacidade"
@@ -70,11 +66,11 @@ export function ConvidarForm() {
         </p>
       )}
       <div className="flex gap-2 sm:col-span-6">
-        <Button type="submit" disabled={pendente}>
-          Convidar
-        </Button>
         <Button type="button" variant="ghost" onClick={() => setAberto(false)}>
           Cancelar
+        </Button>
+        <Button type="submit" loading={pendente}>
+          Convidar usuário
         </Button>
       </div>
     </form>
