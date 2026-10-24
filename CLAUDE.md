@@ -43,7 +43,13 @@ supabase db push          # push migrations para remoto
 supabase db reset         # reset local
 supabase gen types typescript --project-id rnfgzsdsetitvwbvrafz > src/shared/types/supabase.ts
 supabase functions serve   # edge functions local
+supabase functions deploy mcp --project-ref rnfgzsdsetitvwbvrafz --use-api   # publica o MCP
 ```
+
+### Conectar o Claude ao Hub (MCP)
+Crie um token em `/perfil/claude` (valor mostrado uma vez) e rode:
+`claude mcp add --transport http wyter-hub https://rnfgzsdsetitvwbvrafz.supabase.co/functions/v1/mcp --header "Authorization: Bearer <TOKEN>"`
+O Claude herda papel e RLS do usuário; sem valores financeiros; nunca envia e-mail.
 
 ## Convenções
 - Idioma: PT-BR na interface. Commits em inglês (Conventional Commits), descrição PT-BR.
@@ -61,7 +67,7 @@ supabase functions serve   # edge functions local
 001-nucleo       → modelo de dados, auth, permissões, RLS
 002-visoes       → árvore, lista, kanban, gantt, minhas tarefas
 003-registro     → logs diários, fechar o dia, rascunho e-mail
-004-ponte-claude → MCP no Supabase para Claude dos consultores
+004-ponte-claude → MCP (Edge Function `mcp`) para o Claude dos consultores
 005-importadores → Trello, Drive, Gmail
 006-painel       → dashboards diretoria, carga, aprovações
 007-contratos    → contratos, aditivos, escopos extras

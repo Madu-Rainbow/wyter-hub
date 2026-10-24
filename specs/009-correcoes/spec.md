@@ -34,6 +34,7 @@ Bateria 1 (2026-10-24, sem sessão logada): `tsc`, `vitest`, `biome`, fumaça de
 | S-13 | Conta admin de desenvolvimento com senha fraca (migration 000030) | FALTA (trocar a senha ou remover a conta antes de uso real) |
 | S-14 | Backfill da migration 000021 vinculou convites a `pessoa` pelo e-mail (campo que era editável antes da correção). Risco prático baixo (cadastro público fechado, equipe pequena), mas o vínculo não é provado | FALTA (revisar na tela Usuários os convites pendentes e as pessoas sem login: confirmar que cada par e-mail/pessoa é legítimo; revogar e reconvidar os duvidosos) |
 | S-15 | Comentário/anexo: autoria forjável e edição de campos de vínculo (modal Trello, migration 000012) | EM ANDAMENTO (migration 000022 escrita; aplicar quando a CLI voltar a funcionar) |
+| S-16 | Login por Server Action: GoTrue vê um só IP (servidor), então `sign_in_sign_ups` global virava DoS e não havia limite por e-mail | EM ANDAMENTO: código, `config.toml` (300/5min) e migration 000050 (`login_tentativa`, `login_checar`, `login_registrar`; e-mail+IP 5/15min, IP 20/15min, bloqueio progressivo 5 a 60 min) escritos; FALTA `supabase db push` da 000050 (bloqueado pelo classificador) e `supabase gen types`. IP só vale com `LOGIN_TRUSTED_PROXY_HOPS`>0; senão a chave é só o e-mail. Residual: o anon key é público, quem chamar o GoTrue direto contorna o limite da aplicação (só o limite global de 300/5min por IP vale) |
 | S-12 | Chave do Vault legível por `postgres` e `service_role`; sem KMS externo | ACEITO (manter `service_role` fora do cliente); revisar antes de produção |
 
 ## 3. Funcional pendente (encontrado nos relatórios)
@@ -71,7 +72,7 @@ Bateria 1 (2026-10-24, sem sessão logada): `tsc`, `vitest`, `biome`, fumaça de
 | 002 | Modal da tarefa estilo Trello (FR-002-32 a 42) | EM ANDAMENTO (campos personalizados FR-002-41 fora desta rodada) |
 | 002 | Combobox pesquisável e botões padronizados (FR-002-00b/00c) | EM ANDAMENTO fase 1; FALTA fase 2 (tarefas, modal, clientes, dossiê, meu dia, relatórios) |
 | 003 | Meu dia visual e relatório narrativo (FR-003-09 a 14) | EM ANDAMENTO (primeira versão reprovada pelo usuário, em refação) |
-| 004 | Ponte Claude (MCP) | FALTA (spec não escrita) |
+| 004 | Ponte Claude (MCP) | EM ANDAMENTO: spec, migration, Edge Function `mcp` (15 ferramentas, resources, prompts) e tela /perfil/claude entregues e implantadas; FALTA teste ponta a ponta com token real (criar na UI), OAuth para Claude.ai web |
 | 005 | Importadores Trello, Drive, Gmail | FALTA (spec não escrita) |
 | ROADMAP | Horas, rentabilidade, faturamento, relatório ao cliente, capacidade (specs 009+ sugeridas, renumerar para 010+) | FALTA (planejamento) |
 
