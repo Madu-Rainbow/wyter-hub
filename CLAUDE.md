@@ -82,6 +82,7 @@ Tipografia: serifada nos títulos, sans nos dados. Algarismos tabulares.
 - LGPD: campos sensíveis criptografados via Supabase Vault ou column encryption.
 - Mascarar dados antes de enviar para IA.
 - RLS em todas as tabelas. service_role NUNCA no cliente.
+- Login com limite aplicativo: env `LOGIN_RL_SECRET` (aleatório, `openssl rand -hex 32`; só no servidor Next; o hash SHA-256 fica em `login_segredo`) e `LOGIN_TRUSTED_PROXY_HOPS` (nº de proxies confiáveis; 0 = ignora header de IP). Sem o segredo o login falha fechado.
 - Supabase Auth com emails autorizados.
 
 ## Eventos/Logs

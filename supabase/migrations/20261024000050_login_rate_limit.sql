@@ -1,5 +1,12 @@
 -- S-16: limite de tentativas de login na aplicacao (o GoTrue so enxerga o IP do servidor Next).
--- Acesso so por funcoes SECURITY DEFINER; chaves guardadas como SHA-256 (sem e-mail/IP em claro).
+-- O Next chama as RPCs com a anon key (sem service_role), entao EXECUTE vai para anon/authenticated e o portao
+-- e o segredo proprio LOGIN_RL_SECRET, validado aqui contra um hash em tabela privada. Sem segredo cadastrado, tudo falha (falha fechada).
+-- Cadastro do hash (uma vez, pelo SQL Editor/psql, sem commitar o valor):
+--   insert into public.login_segredo (hash) values (sha256(convert_to('<LOGIN_RL_SECRET>', 'utf8')));
+
+create table public.login_segredo (hash bytea primary key);
+alter table public.login_segredo enable row level security;
+revoke all on public.login_segredo from public, anon, authenticated;
 
 create table public.login_tentativa (
   chave text primary key,
@@ -10,66 +17,68 @@ create table public.login_tentativa (
   atualizado_em timestamptz not null default now()
 );
 alter table public.login_tentativa enable row level security;
--- sem policies: authenticated/anon nao acessam a tabela diretamente
-revoke all on public.login_tentativa from anon, authenticated;
+revoke all on public.login_tentativa from public, anon, authenticated;
 create index login_tentativa_atualizado_idx on public.login_tentativa (atualizado_em);
 
--- Chaves: ei = e-mail+IP (5/15min), ip = IP (20/15min), e = so e-mail (5/15min) quando o IP e desconhecido.
+create function public.login_segredo_ok(p_segredo text)
+returns boolean
+language sql stable security definer
+set search_path = ''
+as $$
+  select p_segredo is not null and exists (
+    select 1 from public.login_segredo where hash = sha256(convert_to(p_segredo, 'utf8'))
+  )
+$$;
+revoke all on function public.login_segredo_ok(text) from public, anon, authenticated;
+
+-- Chaves: ei = e-mail+IP (5/15min; IP vazio = so e-mail), ip = IP/64 (20/15min, se conhecido),
+-- e = agregado por e-mail (15/15min) contra rotacao de IP.
 create function public.login_chaves(p_email text, p_ip text)
 returns table (chave text, limite int)
 language sql immutable
 set search_path = ''
 as $$
   with n as (select lower(btrim(coalesce(p_email, ''))) as e, btrim(coalesce(p_ip, '')) as ip)
-  select encode(sha256(convert_to('ei|' || e || '|' || ip, 'utf8')), 'hex'), 5 from n where ip <> ''
+  select encode(sha256(convert_to('ei|' || e || '|' || ip, 'utf8')), 'hex'), 5 from n
+  union all
+  select encode(sha256(convert_to('e|' || e, 'utf8')), 'hex'), 15 from n
   union all
   select encode(sha256(convert_to('ip|' || ip, 'utf8')), 'hex'), 20 from n where ip <> ''
-  union all
-  select encode(sha256(convert_to('e|' || e, 'utf8')), 'hex'), 5 from n where ip = ''
 $$;
 revoke all on function public.login_chaves(text, text) from public, anon, authenticated;
 
--- Retorna segundos de espera (0 = liberado).
-create function public.login_checar(p_email text, p_ip text)
+-- Reserva a tentativa sob lock e devolve segundos de espera (0 = pode tentar). Segredo invalido = erro.
+create function public.login_tentar(p_email text, p_ip text, p_segredo text)
 returns int
-language sql stable security definer
-set search_path = ''
-as $$
-  select coalesce(max(ceil(extract(epoch from (t.bloqueado_ate - now())))), 0)::int
-  from public.login_chaves(p_email, p_ip) k
-  join public.login_tentativa t on t.chave = k.chave
-  where t.bloqueado_ate > now()
-$$;
-
-create function public.login_registrar(p_email text, p_ip text, p_sucesso boolean)
-returns void
 language plpgsql security definer
 set search_path = ''
 as $$
 declare
   k record;
   r public.login_tentativa%rowtype;
-  v_email text := lower(btrim(coalesce(p_email, '')));
+  v_espera int;
 begin
-  if p_sucesso then
-    -- so vale com sessao real do mesmo e-mail: impede zerar contador alheio via chamada direta
-    if lower(coalesce(auth.jwt() ->> 'email', '')) is distinct from v_email then
-      return;
-    end if;
-    delete from public.login_tentativa t
-    using public.login_chaves(v_email, p_ip) c
-    where t.chave = c.chave and c.limite = 5;
-    return;
+  if not public.login_segredo_ok(p_segredo) then
+    raise exception 'nao autorizado' using errcode = '42501';
   end if;
 
-  for k in select * from public.login_chaves(v_email, p_ip) loop
-    insert into public.login_tentativa (chave, contador) values (k.chave, 0)
-    on conflict (chave) do nothing;
-    select * into r from public.login_tentativa where chave = k.chave for update;
+  -- trava todas as linhas em ordem fixa (sem deadlock) e checa bloqueio
+  for k in select * from public.login_chaves(p_email, p_ip) order by chave loop
+    insert into public.login_tentativa (chave) values (k.chave) on conflict (chave) do nothing;
+    perform 1 from public.login_tentativa where chave = k.chave for update;
+  end loop;
 
-    if r.bloqueado_ate is not null and r.bloqueado_ate > now() then
-      continue; -- ja bloqueado: nao estende
-    end if;
+  select coalesce(max(ceil(extract(epoch from (t.bloqueado_ate - now())))), 0)::int
+    into v_espera
+  from public.login_chaves(p_email, p_ip) c
+  join public.login_tentativa t on t.chave = c.chave
+  where t.bloqueado_ate > now();
+  if v_espera > 0 then
+    return v_espera;
+  end if;
+
+  for k in select * from public.login_chaves(p_email, p_ip) loop
+    select * into r from public.login_tentativa where chave = k.chave;
     if r.janela_inicio < now() - interval '15 minutes' then
       r.contador := 0;
       r.janela_inicio := now();
@@ -87,16 +96,32 @@ begin
      where chave = k.chave;
   end loop;
 
-  -- limpeza oportunista (nivel de bloqueio zera apos 24h sem atividade)
   if random() < 0.05 then
     delete from public.login_tentativa
     where atualizado_em < now() - interval '24 hours'
       and (bloqueado_ate is null or bloqueado_ate < now());
   end if;
+  return 0;
 end;
 $$;
 
-revoke all on function public.login_checar(text, text) from public;
-revoke all on function public.login_registrar(text, text, boolean) from public;
-grant execute on function public.login_checar(text, text) to anon, authenticated;
-grant execute on function public.login_registrar(text, text, boolean) to anon, authenticated;
+-- Sucesso: zera so o contador e-mail+IP (nao o agregado por e-mail nem o por IP).
+create function public.login_sucesso(p_email text, p_ip text, p_segredo text)
+returns void
+language plpgsql security definer
+set search_path = ''
+as $$
+begin
+  if not public.login_segredo_ok(p_segredo) then
+    raise exception 'nao autorizado' using errcode = '42501';
+  end if;
+  delete from public.login_tentativa
+  where chave = encode(sha256(convert_to(
+    'ei|' || lower(btrim(coalesce(p_email, ''))) || '|' || btrim(coalesce(p_ip, '')), 'utf8')), 'hex');
+end;
+$$;
+
+revoke all on function public.login_tentar(text, text, text) from public;
+revoke all on function public.login_sucesso(text, text, text) from public;
+grant execute on function public.login_tentar(text, text, text) to anon, authenticated;
+grant execute on function public.login_sucesso(text, text, text) to anon, authenticated;

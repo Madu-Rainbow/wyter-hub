@@ -29,9 +29,12 @@ export async function entrar(_prev: { erro: string }, form: FormData): Promise<{
     fn: string,
     args: Record<string, unknown>,
   ) => Promise<{ data: unknown; error: unknown }>;
-  const { data: espera, error: errChecar } = await rpc("login_checar", {
+  const segredo = process.env.LOGIN_RL_SECRET ?? "";
+  if (!segredo) return BLOQUEIO; // falha fechada
+  const { data: espera, error: errChecar } = await rpc("login_tentar", {
     p_email: email,
     p_ip: ip,
+    p_segredo: segredo,
   });
   // falha fechada: sem o controle, não deixa tentar senha
   if (errChecar || Number(espera ?? 0) > 0) return BLOQUEIO;
@@ -40,7 +43,7 @@ export async function entrar(_prev: { erro: string }, form: FormData): Promise<{
     email,
     password: parsed.data.senha,
   });
-  await rpc("login_registrar", { p_email: email, p_ip: ip, p_sucesso: !error });
+  if (!error) await rpc("login_sucesso", { p_email: email, p_ip: ip, p_segredo: segredo });
   if (error) return error.status === 429 ? BLOQUEIO : generico;
 
   redirect("/painel");
