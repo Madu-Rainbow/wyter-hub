@@ -17,12 +17,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .from("pessoa")
     .select("nome, papel")
     .eq("auth_user_id", user.id)
-    .single();
+    .eq("ativo", true)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!pessoa) redirect("/api/auth/nao-autorizado");
 
   const { clientes: arvore } = await carregarArvore();
   const collapsed = (await cookies()).get("sidebar_collapsed")?.value === "1";
-  const userName = pessoa?.nome ?? user.user_metadata?.full_name ?? "Usuário";
-  const userRole = (pessoa?.papel as AppRole) ?? "analista";
+  const userName = pessoa.nome;
+  const userRole = pessoa.papel as AppRole;
 
   return (
     <div className="flex h-dvh overflow-hidden bg-bg">

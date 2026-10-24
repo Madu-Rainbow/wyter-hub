@@ -29,11 +29,29 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthPage = pathname === "/login";
   const isCallback = pathname.startsWith("/auth/callback");
+  const isAuthApi = pathname.startsWith("/api/auth");
 
   if (!user && !isAuthPage && !isCallback) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  // Logado sem pessoa ativa vinculada: nao autorizado (a rota faz signOut e volta ao login).
+  if (user && !isAuthApi) {
+    const { data: pessoa } = await supabase
+      .from("pessoa")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .eq("ativo", true)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (!pessoa) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/api/auth/nao-autorizado";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (user && isAuthPage) {

@@ -7,13 +7,13 @@ import { useState } from "react";
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const error = searchParams.get("error");
+  const error = searchParams.get("erro") ?? searchParams.get("error");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(
-    error === "unauthorized"
-      ? "E-mail não autorizado. Entre em contato com a diretoria."
+    error === "nao-autorizado" || error === "unauthorized"
+      ? "Acesso restrito a membros da Wyter"
       : error
         ? "Erro ao fazer login. Tente novamente."
         : "",
