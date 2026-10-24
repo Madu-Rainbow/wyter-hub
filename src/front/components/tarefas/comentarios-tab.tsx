@@ -4,7 +4,6 @@ import { Button } from "@front/components/ui/button";
 import { createClient } from "@front/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { registrarEvento } from "./acoes";
 import type { Ctx } from "./shared";
 
 type Com = { id: string; texto: string; created_at: string; autor: { nome: string } | null };
@@ -49,7 +48,6 @@ export function ComentariosTab({ tarefaId, ctx }: { tarefaId: string; ctx: Ctx }
     if (error) return setErro(error.message);
     setErro(null);
     setTexto("");
-    await registrarEvento(ctx, tarefaId, "comentou", null, { texto: t.slice(0, 200) });
     await carregar();
     router.refresh();
   }

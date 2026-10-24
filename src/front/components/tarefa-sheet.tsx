@@ -13,7 +13,7 @@ import { trabalhoHref } from "@front/lib/trabalho";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { atualizarTarefa, criarTarefa, registrarEvento } from "./tarefas/acoes";
+import { atualizarTarefa, criarTarefa } from "./tarefas/acoes";
 import { AtividadeTab } from "./tarefas/atividade-tab";
 import { ChecklistTab } from "./tarefas/checklist-tab";
 import { ComentariosTab } from "./tarefas/comentarios-tab";
@@ -147,7 +147,6 @@ export function TarefaSheet({
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", t.id);
       if (error) return setErro(error.message);
-      await registrarEvento(ctx, t.id, "excluiu", { titulo: t.titulo }, null);
       onOpenChange(false);
       router.refresh();
     });
