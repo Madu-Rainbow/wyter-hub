@@ -1,5 +1,6 @@
 "use client";
 
+import { trabalhoHref } from "@front/lib/trabalho";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -68,7 +69,7 @@ export function SubtarefasTab({ mae, filhas, ctx }: { mae: Tarefa; filhas: Taref
               onChange={() => alterna(f)}
             />
             <Link
-              href={`/tarefas/${f.chave}`}
+              href={trabalhoHref({ projeto: f.projeto_id, tarefa: f.chave })}
               className="shrink-0 text-xs tabular-nums text-text-muted hover:underline"
             >
               {f.chave}

@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@front/lib/supabase/client";
+import { trabalhoHref } from "@front/lib/trabalho";
 import { DragDropContext, Draggable, Droppable, type DropResult } from "@hello-pangea/dnd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -68,7 +69,7 @@ export function ProjetosKanban({ projetos }: { projetos: ProjetoItem[] }) {
                               className={`rounded-md border border-border bg-surface p-3 ${ds.isDragging ? "shadow-md" : ""}`}
                             >
                               <Link
-                                href={`/projetos/${p.id}`}
+                                href={trabalhoHref({ projeto: p.id })}
                                 className="text-sm font-medium text-text hover:text-accent"
                               >
                                 {p.nome}

@@ -9,9 +9,9 @@ import { ProjetoForm } from "../_components/projeto-form";
 export default async function NovoProjetoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cliente?: string }>;
+  searchParams: Promise<{ cliente?: string; contrato?: string }>;
 }) {
-  const { cliente: clienteParam } = await searchParams;
+  const { cliente: clienteParam, contrato: contratoParam } = await searchParams;
   const supabase = await createSupabaseServer();
   const {
     data: { user },
@@ -25,7 +25,7 @@ export default async function NovoProjetoPage({
     .single();
 
   if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel)) {
-    redirect("/projetos");
+    redirect("/trabalho?aba=projetos");
   }
 
   const [{ data: clientes }, { data: pessoas }, { data: projetos }, { data: contratos }] =
@@ -121,15 +121,15 @@ export default async function NovoProjetoPage({
       cliente_id,
     });
 
-    redirect(`/projetos/${novo.id}`);
+    redirect(`/trabalho?projeto=${novo.id}`);
   }
 
   return (
     <div className="mx-auto max-w-xl">
       <Button variant="ghost" size="sm" className="mb-4 gap-1.5 text-text-muted" asChild>
-        <Link href="/projetos">
+        <Link href="/trabalho">
           <ArrowLeft className="size-3.5" />
-          Projetos
+          Trabalho
         </Link>
       </Button>
       <h1 className="mb-6 font-title text-2xl text-text">Novo projeto</h1>
@@ -146,7 +146,7 @@ export default async function NovoProjetoPage({
           cliente_id: c.cliente_id,
           label: c.numero ? `${c.numero} · ${c.tipo}` : c.tipo,
         }))}
-        defaults={{ cliente_id: clienteParam }}
+        defaults={{ cliente_id: clienteParam, contrato_id: contratoParam }}
         submitLabel="Criar projeto"
       />
     </div>

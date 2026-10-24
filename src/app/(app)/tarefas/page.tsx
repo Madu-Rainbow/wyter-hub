@@ -1,8 +1,24 @@
-import { type Escopo, TarefasDoEscopo } from "@front/components/tarefas/escopo";
+import { trabalhoHref } from "@front/lib/trabalho";
+import { redirect } from "next/navigation";
 
-export default async function TarefasPage({ searchParams }: { searchParams: Promise<Escopo> }) {
-  const { cliente, contrato, projeto, resp, status, prioridade, atrasadas } = await searchParams;
-  return (
-    <TarefasDoEscopo escopo={{ cliente, contrato, projeto, resp, status, prioridade, atrasadas }} />
+export default async function TarefasPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const { cliente, contrato, projeto, resp, status, prioridade, atrasadas, visao } =
+    await searchParams;
+  redirect(
+    trabalhoHref({
+      cliente,
+      contrato,
+      projeto,
+      resp,
+      status,
+      prioridade,
+      atrasadas,
+      visao,
+      aba: "tarefas",
+    }),
   );
 }

@@ -2,7 +2,6 @@ import type { ChecklistItem, Filtros, Tarefa } from "@front/components/tarefas/s
 import { TarefasView } from "@front/components/tarefas/tarefas-view";
 import { carregarArvore } from "@front/lib/arvore";
 import { createSupabaseServer } from "@front/lib/supabase/server";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 export type Escopo = {
@@ -22,12 +21,13 @@ const SELECT =
 export async function TarefasDoEscopo({
   escopo,
   abrirNumero,
-  breadcrumb = true,
+  nova = false,
 }: {
   escopo: Escopo;
-  /** Abre o painel da tarefa de numero N (rota /tarefas/[chave]); exige escopo.projeto. */
+  /** Abre o painel da tarefa de numero N (?tarefa=CHAVE); exige escopo.projeto. */
   abrirNumero?: number;
-  breadcrumb?: boolean;
+  /** Abre o painel de nova tarefa. */
+  nova?: boolean;
 }) {
   const supabase = await createSupabaseServer();
   const {
@@ -98,52 +98,12 @@ export async function TarefasDoEscopo({
 
   return (
     <div className="min-w-0">
-      {breadcrumb && (
-        <nav aria-label="Escopo" className="mb-4">
-          <h1 className="font-title text-2xl text-text">Tarefas</h1>
-          <p className="mt-1 flex flex-wrap gap-x-1.5 text-sm text-text-muted">
-            <Link href="/tarefas" className="hover:text-accent">
-              Todas
-            </Link>
-            {clienteNo && (
-              <>
-                <span>/</span>
-                <Link href={`/tarefas?cliente=${clienteNo.id}`} className="hover:text-accent">
-                  {clienteNo.nome}
-                </Link>
-              </>
-            )}
-            {(contratoNo || (escopo.projeto && ref)) && (
-              <>
-                <span>/</span>
-                {contratoNo || ref?.contratoId ? (
-                  <Link
-                    href={`/tarefas?contrato=${contratoNo?.id ?? ref?.contratoId}`}
-                    className="hover:text-accent"
-                  >
-                    {contratoNo?.nome ?? ref?.contratoNome}
-                  </Link>
-                ) : (
-                  <span>Sem contrato</span>
-                )}
-              </>
-            )}
-            {escopo.projeto && ref && (
-              <>
-                <span>/</span>
-                <Link href={`/tarefas?projeto=${ref.id}`} className="font-medium text-text">
-                  {ref.nome}
-                </Link>
-              </>
-            )}
-          </p>
-        </nav>
-      )}
       <TarefasView
-        key={JSON.stringify(escopo)}
+        key={JSON.stringify([escopo, abrirNumero, nova])}
         tarefas={lista}
         pessoas={pessoas ?? []}
         abrirId={abrir?.id ?? null}
+        abrirNova={nova}
         filtrosIniciais={filtros}
         ctx={{
           orgId: eu?.org_id ?? "",

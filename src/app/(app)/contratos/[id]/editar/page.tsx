@@ -1,6 +1,8 @@
 import { ContratoForm } from "@front/components/contratos/contrato-form";
 import { Button } from "@front/components/ui/button";
+import { financeiroContratos } from "@front/lib/financeiro";
 import { createSupabaseServer } from "@front/lib/supabase/server";
+import { COLUNAS_CONTRATO } from "@front/lib/trabalho";
 import type { Database } from "@shared/types/supabase";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -19,10 +21,12 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
     .select("id, org_id, papel")
     .eq("auth_user_id", user.id)
     .single();
-  if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel)) redirect(`/contratos/${id}`);
+  if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel))
+    redirect(`/trabalho?contrato=${id}`);
 
+  const fin = (await financeiroContratos(supabase, [id])).get(id);
   const [{ data: contrato }, { data: clientes }] = await Promise.all([
-    supabase.from("contrato").select("*").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("contrato").select(COLUNAS_CONTRATO).eq("id", id).is("deleted_at", null).single(),
     supabase
       .from("cliente")
       .select("id, nome_fantasia, razao_social")
@@ -53,7 +57,11 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
       return { error: "Cliente, tipo e início da vigência são obrigatórios." };
     const valor = formData.get("valor") as string;
 
-    const { data: antes } = await sb.from("contrato").select("*").eq("id", id).single();
+    const { data: antes } = await sb
+      .from("contrato")
+      .select(COLUNAS_CONTRATO)
+      .eq("id", id)
+      .single();
     const row = {
       cliente_id,
       tipo,
@@ -79,13 +87,13 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
       depois: row as unknown as Database["public"]["Tables"]["evento"]["Insert"]["depois"],
       cliente_id,
     });
-    redirect(`/contratos/${id}`);
+    redirect(`/trabalho?contrato=${id}`);
   }
 
   return (
     <div className="mx-auto max-w-xl">
       <Button variant="ghost" size="sm" className="mb-4 gap-1.5 text-text-muted" asChild>
-        <Link href={`/contratos/${id}`}>
+        <Link href={`/trabalho?contrato=${id}`}>
           <ArrowLeft className="size-3.5" />
           Voltar
         </Link>
@@ -97,7 +105,11 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
           id: c.id,
           label: c.nome_fantasia || c.razao_social,
         }))}
-        contrato={contrato}
+        contrato={{
+          ...contrato,
+          valor: fin?.valor ?? null,
+          forma_pagamento: fin?.forma_pagamento ?? null,
+        }}
         submitLabel="Salvar alterações"
       />
     </div>

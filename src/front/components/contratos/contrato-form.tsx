@@ -15,6 +15,7 @@ type Props = {
     vigencia_inicio: string;
     vigencia_fim: string | null;
   };
+  clienteInicial?: string;
   submitLabel: string;
 };
 
@@ -22,7 +23,7 @@ const input =
   "w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none";
 const label = "mb-1 block text-sm font-medium text-text";
 
-export function ContratoForm({ action, clientes, contrato, submitLabel }: Props) {
+export function ContratoForm({ action, clientes, contrato, clienteInicial, submitLabel }: Props) {
   const [state, formAction, pending] = useActionState(action, { error: undefined });
   return (
     <form action={formAction} className="space-y-4">
@@ -39,7 +40,7 @@ export function ContratoForm({ action, clientes, contrato, submitLabel }: Props)
           id="cliente_id"
           name="cliente_id"
           required
-          defaultValue={contrato?.cliente_id ?? ""}
+          defaultValue={contrato?.cliente_id ?? clienteInicial ?? ""}
           className={input}
         >
           <option value="">Selecione...</option>

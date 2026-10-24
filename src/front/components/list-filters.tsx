@@ -17,6 +17,9 @@ export function ListFilters({
   hidden?: Record<string, string | undefined>;
 }) {
   const ativo = !!q || campos.some((c) => c.value);
+  const hp = new URLSearchParams();
+  for (const [k, v] of Object.entries(hidden)) if (v) hp.set(k, v);
+  const limpar = hp.size ? `${basePath}?${hp}` : basePath;
   const sel =
     "h-9 rounded-md border border-border bg-surface px-2 text-sm text-text focus-visible:outline-2 focus-visible:outline-accent";
   return (
@@ -56,7 +59,7 @@ export function ListFilters({
       </Button>
       {ativo && (
         <Button variant="ghost" size="sm" className="text-text-muted" asChild>
-          <Link href={hidden.visao ? `${basePath}?visao=${hidden.visao}` : basePath}>Limpar</Link>
+          <Link href={limpar}>Limpar</Link>
         </Button>
       )}
     </form>

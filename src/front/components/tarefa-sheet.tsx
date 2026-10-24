@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from "@front/components/ui/sheet";
 import { createClient } from "@front/lib/supabase/client";
+import { trabalhoHref } from "@front/lib/trabalho";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -169,7 +170,7 @@ export function TarefaSheet({
           {editando && t.chave && (
             <p className="text-xs text-text-muted">
               <Link
-                href={`/tarefas/${t.chave}`}
+                href={trabalhoHref({ projeto: t.projeto_id, tarefa: t.chave })}
                 className="font-medium tabular-nums hover:underline"
               >
                 {t.chave}
@@ -177,13 +178,19 @@ export function TarefaSheet({
               {caminho && (
                 <>
                   {" · "}
-                  <Link href={`/tarefas?cliente=${caminho.clienteId}`} className="hover:underline">
+                  <Link
+                    href={trabalhoHref({ cliente: caminho.clienteId })}
+                    className="hover:underline"
+                  >
                     {caminho.clienteNome}
                   </Link>
                   {" / "}
                   {caminho.contratoId ? (
                     <Link
-                      href={`/tarefas?contrato=${caminho.contratoId}`}
+                      href={trabalhoHref({
+                        cliente: caminho.clienteId,
+                        contrato: caminho.contratoId,
+                      })}
                       className="hover:underline"
                     >
                       {caminho.contratoNome}
@@ -192,7 +199,7 @@ export function TarefaSheet({
                     "Sem contrato"
                   )}
                   {" / "}
-                  <Link href={`/tarefas?projeto=${caminho.id}`} className="hover:underline">
+                  <Link href={trabalhoHref({ projeto: caminho.id })} className="hover:underline">
                     {caminho.nome}
                   </Link>
                 </>

@@ -1,6 +1,8 @@
 import { ContatoForm } from "@front/components/clientes/contato-form";
 import { DossieSheet } from "@front/components/clientes/dossie-sheet";
 import { Button } from "@front/components/ui/button";
+import { financeiroContratos } from "@front/lib/financeiro";
+import { ehGestor } from "@front/lib/papel";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { ABERTAS, formatDataISO, statusLabels } from "@front/lib/tarefas";
 import { ArrowLeft, Pencil, Plus } from "lucide-react";
@@ -46,7 +48,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
       .order("created_at", { ascending: false }),
     supabase
       .from("contrato")
-      .select("id, tipo, numero, valor, vigencia_inicio, vigencia_fim")
+      .select("id, tipo, numero, vigencia_inicio, vigencia_fim")
       .eq("cliente_id", id)
       .is("deleted_at", null)
       .order("vigencia_inicio", { ascending: false }),
@@ -81,6 +83,12 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
   const retificadas = new Set(
     (dossies ?? []).map((d) => RET.exec(d.conteudo)?.[1]).filter(Boolean),
   );
+  const finContratos = ehGestor(pessoaPapel)
+    ? await financeiroContratos(
+        supabase,
+        (contratos ?? []).map((c) => c.id),
+      )
+    : null;
   const podeEditar = ["diretor", "consultor"].includes(pessoaPapel ?? "");
   const addContato = adicionarContato.bind(null, id);
   const addDossie = adicionarDossie.bind(null, id);
@@ -152,7 +160,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
             {projetos?.map((p) => (
               <Link
                 key={p.id}
-                href={`/projetos/${p.id}`}
+                href={`/trabalho?projeto=${p.id}`}
                 className="block rounded-md border border-border bg-surface p-3 transition-colors hover:border-accent/30"
               >
                 <div className="flex items-center justify-between">
@@ -186,7 +194,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
             {contratos?.map((ct) => (
               <Link
                 key={ct.id}
-                href={`/contratos/${ct.id}`}
+                href={`/trabalho?contrato=${ct.id}`}
                 className="block rounded-md border border-border bg-surface p-3 transition-colors hover:border-accent/30 hover:bg-secondary/40"
               >
                 <div className="flex items-center justify-between">
@@ -194,8 +202,13 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
                   {ct.numero && <span className="text-xs text-text-muted">{ct.numero}</span>}
                 </div>
                 <div className="mt-1 flex gap-3 text-xs text-text-muted">
-                  {ct.valor != null && (
-                    <span>R$ {ct.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  {finContratos?.get(ct.id)?.valor != null && (
+                    <span>
+                      R${" "}
+                      {finContratos
+                        .get(ct.id)
+                        ?.valor?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
                   )}
                   <span>
                     {formatDate(ct.vigencia_inicio)}
@@ -207,7 +220,10 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
             {(!contratos || contratos.length === 0) && (
               <p className="text-sm text-text-muted">
                 Nenhum contrato.{" "}
-                <Link href="/contratos" className="text-accent hover:underline">
+                <Link
+                  href={`/trabalho?cliente=${id}&aba=contratos`}
+                  className="text-accent hover:underline"
+                >
                   Ver contratos
                 </Link>
               </p>
@@ -256,7 +272,7 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
             {tarefas.map((t) => (
               <li key={t.id}>
                 <Link
-                  href={`/projetos/${t.projeto.id}`}
+                  href={`/trabalho?projeto=${t.projeto.id}&aba=tarefas`}
                   className="flex items-center justify-between gap-3 px-3 py-2 text-sm transition-colors hover:bg-secondary/50"
                 >
                   <span className="min-w-0">

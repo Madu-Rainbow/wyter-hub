@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export type Situacao = "sem_projeto" | "em_andamento" | "entregue" | "encerrado";
 
 export const SITUACOES: { key: Situacao; label: string }[] = [
@@ -39,21 +37,6 @@ export function Progresso({ entregues, total }: { entregues: number; total: numb
       <p className="mt-1 text-xs tabular-nums text-text-muted">
         {entregues}/{total} tarefas entregues
       </p>
-    </div>
-  );
-}
-
-export function VisaoToggle({ visao }: { visao: "lista" | "kanban" }) {
-  const cls = (a: boolean) =>
-    `px-3 py-1.5 text-sm ${a ? "bg-accent text-white" : "text-text-muted hover:bg-secondary/50"}`;
-  return (
-    <div className="inline-flex overflow-hidden rounded-md border border-border">
-      <Link href="/contratos" className={cls(visao === "lista")}>
-        Lista
-      </Link>
-      <Link href="/contratos?visao=kanban" className={cls(visao === "kanban")}>
-        Kanban
-      </Link>
     </div>
   );
 }

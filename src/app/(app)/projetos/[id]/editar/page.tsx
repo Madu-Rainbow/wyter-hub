@@ -21,7 +21,7 @@ export default async function EditarProjetoPage({ params }: { params: Promise<{ 
     .single();
 
   if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel)) {
-    redirect(`/projetos/${id}`);
+    redirect(`/trabalho?projeto=${id}`);
   }
 
   const { data: projeto } = await supabase
@@ -128,13 +128,13 @@ export default async function EditarProjetoPage({ params }: { params: Promise<{ 
       cliente_id,
     });
 
-    redirect(`/projetos/${id}`);
+    redirect(`/trabalho?projeto=${id}`);
   }
 
   return (
     <div className="mx-auto max-w-xl">
       <Button variant="ghost" size="sm" className="mb-4 gap-1.5 text-text-muted" asChild>
-        <Link href={`/projetos/${id}`}>
+        <Link href={`/trabalho?projeto=${id}`}>
           <ArrowLeft className="size-3.5" />
           Voltar
         </Link>

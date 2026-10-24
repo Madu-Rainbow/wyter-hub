@@ -123,7 +123,7 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
       .select("id", { count: "exact", head: true })
       .eq("status", "pendente"),
     gestor
-      ? supabase.from("contrato").select("id, valor").is("deleted_at", null)
+      ? supabase.from("contrato_financeiro" as never).select("contrato_id, valor")
       : Promise.resolve({ data: null }),
   ]);
 
@@ -160,7 +160,9 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
     atr: !!t.data_prazo && t.data_prazo < hoje,
   }));
   const valores = new Map(
-    ((valoresR.data ?? []) as { id: string; valor: number | null }[]).map((c) => [c.id, c.valor]),
+    ((valoresR.data ?? []) as unknown as { contrato_id: string; valor: number | null }[]).map(
+      (c) => [c.contrato_id, c.valor],
+    ),
   );
   const cats = {
     status: TAREFA_STATUS.map((k) => ({ key: k, label: statusLabels[k] ?? k })),

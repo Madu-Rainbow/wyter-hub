@@ -6,7 +6,12 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-export default async function NovoContratoPage() {
+export default async function NovoContratoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cliente?: string }>;
+}) {
+  const { cliente: clienteParam } = await searchParams;
   const supabase = await createSupabaseServer();
   const {
     data: { user },
@@ -18,7 +23,8 @@ export default async function NovoContratoPage() {
     .select("id, org_id, papel")
     .eq("auth_user_id", user.id)
     .single();
-  if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel)) redirect("/contratos");
+  if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel))
+    redirect("/trabalho?aba=contratos");
 
   const { data: clientes } = await supabase
     .from("cliente")
@@ -71,15 +77,15 @@ export default async function NovoContratoPage() {
       depois: row as unknown as Database["public"]["Tables"]["evento"]["Insert"]["depois"],
       cliente_id,
     });
-    redirect(`/contratos/${novo.id}`);
+    redirect(`/trabalho?contrato=${novo.id}`);
   }
 
   return (
     <div className="mx-auto max-w-xl">
       <Button variant="ghost" size="sm" className="mb-4 gap-1.5 text-text-muted" asChild>
-        <Link href="/contratos">
+        <Link href="/trabalho">
           <ArrowLeft className="size-3.5" />
-          Contratos
+          Trabalho
         </Link>
       </Button>
       <h1 className="mb-6 font-title text-2xl text-text">Novo contrato</h1>
@@ -89,6 +95,7 @@ export default async function NovoContratoPage() {
           id: c.id,
           label: c.nome_fantasia || c.razao_social,
         }))}
+        clienteInicial={clienteParam}
         submitLabel="Criar contrato"
       />
     </div>

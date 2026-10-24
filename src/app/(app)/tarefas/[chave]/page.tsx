@@ -1,18 +1,12 @@
-import { TarefasDoEscopo } from "@front/components/tarefas/escopo";
-import { carregarArvore } from "@front/lib/arvore";
-import { notFound } from "next/navigation";
+import { trabalhoHref } from "@front/lib/trabalho";
+import { redirect } from "next/navigation";
 
-/** /tarefas/FARM-12: visao do projeto com o painel da tarefa aberto. */
+/** /tarefas/FARM-12 -> /trabalho?tarefa=FARM-12 (a página deriva o projeto da chave). */
 export default async function TarefaPorChavePage({
   params,
 }: {
   params: Promise<{ chave: string }>;
 }) {
   const { chave } = await params;
-  const m = /^([A-Za-z0-9]{2,6})-(\d+)$/.exec(decodeURIComponent(chave));
-  if (!m) notFound();
-  const { projetos } = await carregarArvore();
-  const projeto = projetos.find((p) => p.chave === m[1].toUpperCase());
-  if (!projeto) notFound();
-  return <TarefasDoEscopo escopo={{ projeto: projeto.id }} abrirNumero={Number(m[2])} />;
+  redirect(trabalhoHref({ tarefa: decodeURIComponent(chave).toUpperCase() }));
 }

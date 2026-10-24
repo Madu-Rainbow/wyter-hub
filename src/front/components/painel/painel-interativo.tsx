@@ -144,17 +144,17 @@ export function PainelInterativo(p: Props) {
     {
       label: "Projetos em andamento",
       value: String(total.projetos.filter((x) => x.st === "em_andamento").length),
-      href: qs("/projetos", { status: "em_andamento", resp: p.base.resp }),
+      href: qs("/trabalho", { aba: "projetos", status: "em_andamento", resp: p.base.resp }),
     },
     {
       label: "Tarefas abertas",
       value: String(abertas.length),
-      href: qs("/tarefas", { ...p.base, status: "abertas" }),
+      href: qs("/trabalho", { aba: "tarefas", ...p.base, status: "abertas" }),
     },
     {
       label: "Tarefas atrasadas",
       value: String(atrasadas.length),
-      href: qs("/tarefas", { ...p.base, atrasadas: "1" }),
+      href: qs("/trabalho", { aba: "tarefas", ...p.base, atrasadas: "1" }),
     },
     {
       label: "Aprovações pendentes",
@@ -166,7 +166,7 @@ export function PainelInterativo(p: Props) {
     kpis.push({
       label: "Contratos em andamento",
       value: brl(emAnd.reduce((s, c) => s + (c.valor ?? 0), 0)),
-      href: "/contratos?situacao=em_andamento",
+      href: "/trabalho?aba=contratos&situacao=em_andamento",
     });
   }
 
@@ -226,7 +226,7 @@ export function PainelInterativo(p: Props) {
       unidade: "Tarefas",
       span: p.gestor ? "lg:col-span-6" : "lg:col-span-12",
       linhas: lStatus,
-      href: L("/tarefas"),
+      href: L("/trabalho", { aba: "tarefas" }),
     },
     {
       dim: "prio",
@@ -234,7 +234,7 @@ export function PainelInterativo(p: Props) {
       unidade: "Tarefas",
       span: "lg:col-span-4",
       linhas: lPrio,
-      href: L("/tarefas", { status: "abertas" }),
+      href: L("/trabalho", { aba: "tarefas", status: "abertas" }),
     },
     ...(p.gestor
       ? [
@@ -246,7 +246,7 @@ export function PainelInterativo(p: Props) {
             carga: true,
             refLabel: "Capacidade semanal (h)",
             linhas: lPessoa,
-            href: L("/tarefas", { status: "abertas" }),
+            href: L("/trabalho", { aba: "tarefas", status: "abertas" }),
           },
         ]
       : []),
@@ -256,7 +256,7 @@ export function PainelInterativo(p: Props) {
       unidade: "Contratos",
       span: "lg:col-span-4",
       linhas: lSit,
-      href: qs("/contratos", { cliente: p.base.cliente }),
+      href: qs("/trabalho", { aba: "contratos", cliente: p.base.cliente }),
     },
     {
       dim: "pst",
@@ -264,7 +264,7 @@ export function PainelInterativo(p: Props) {
       unidade: "Projetos",
       span: "lg:col-span-4",
       linhas: lPst,
-      href: qs("/projetos", { resp: p.base.resp, cliente: p.base.cliente }),
+      href: qs("/trabalho", { aba: "projetos", resp: p.base.resp, cliente: p.base.cliente }),
     },
     {
       dim: "sem",
@@ -273,7 +273,7 @@ export function PainelInterativo(p: Props) {
       span: "lg:col-span-12",
       tipo: "linha",
       linhas: lSem,
-      href: L("/tarefas", { status: "concluida" }),
+      href: L("/trabalho", { aba: "tarefas", status: "concluida" }),
     },
   ];
 

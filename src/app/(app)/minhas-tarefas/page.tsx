@@ -58,7 +58,7 @@ export default async function MinhasTarefasPage() {
       {tarefas.length === 0 && (
         <div className="rounded-md border border-dashed border-border p-8 text-center">
           <p className="text-sm text-text-muted">Nenhuma tarefa aberta atribuída a você.</p>
-          <Link href="/projetos" className="mt-2 inline-block text-sm text-accent hover:underline">
+          <Link href="/trabalho" className="mt-2 inline-block text-sm text-accent hover:underline">
             Ver projetos
           </Link>
         </div>
@@ -77,7 +77,11 @@ export default async function MinhasTarefasPage() {
               {g.itens.map((t) => (
                 <li key={t.id}>
                   <Link
-                    href={t.projeto ? `/tarefas?projeto=${t.projeto.id}` : "/tarefas"}
+                    href={
+                      t.projeto
+                        ? `/trabalho?projeto=${t.projeto.id}&aba=tarefas`
+                        : "/trabalho?aba=tarefas"
+                    }
                     className="flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-secondary/50 focus-visible:outline-2 focus-visible:outline-accent"
                   >
                     <div className="min-w-0">

@@ -3,22 +3,20 @@
 import { Button } from "@front/components/ui/button";
 import { Separator } from "@front/components/ui/separator";
 import { TooltipProvider } from "@front/components/ui/tooltip";
-import type { NoCliente } from "@front/lib/arvore";
 import {
   Building2,
   CheckSquare,
-  FileText,
   FolderKanban,
   LayoutDashboard,
   LogOut,
+  Network,
   PanelLeftClose,
   PanelLeftOpen,
   ShieldCheck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
-import { ArvoreNav } from "./arvore-nav";
+import { useEffect, useState } from "react";
 import { NavLink } from "./nav-link";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
@@ -30,10 +28,10 @@ const navItems: NavItem[] = [
     label: "Minhas tarefas",
     icon: <CheckSquare className="size-4 shrink-0" />,
   },
+  { href: "/trabalho", label: "Trabalho", icon: <FolderKanban className="size-4 shrink-0" /> },
   { href: "/clientes", label: "Clientes", icon: <Building2 className="size-4 shrink-0" /> },
-  { href: "/projetos", label: "Projetos", icon: <FolderKanban className="size-4 shrink-0" /> },
   { href: "/equipe", label: "Equipe", icon: <Users className="size-4 shrink-0" /> },
-  { href: "/contratos", label: "Contratos", icon: <FileText className="size-4 shrink-0" /> },
+  { href: "/dataware", label: "DataWare", icon: <Network className="size-4 shrink-0" /> },
 ];
 
 const adminItems: NavItem[] = [
@@ -50,13 +48,11 @@ export function Sidebar({
   userRole,
   initialCollapsed = false,
   mobile = false,
-  arvore = [],
 }: {
   userName: string;
   userRole: string;
   initialCollapsed?: boolean;
   mobile?: boolean;
-  arvore?: NoCliente[];
 }) {
   const isDiretor = userRole === "diretor";
   const [collapsedState, setCollapsed] = useState(initialCollapsed);
@@ -113,9 +109,7 @@ export function Sidebar({
 
         <Separator />
 
-        <nav
-          className={`space-y-0.5 px-2 py-3 ${collapsed || arvore.length === 0 ? "min-h-0 flex-1 overflow-y-auto" : "shrink-0"}`}
-        >
+        <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
           {navItems.map((item) => (
             <NavLink key={item.href} {...item} collapsed={collapsed} />
           ))}
@@ -133,18 +127,6 @@ export function Sidebar({
             </>
           )}
         </nav>
-
-        {!collapsed && arvore.length > 0 ? (
-          <>
-            <Separator />
-            <p className="px-4 pb-1 pt-2 text-xs font-medium uppercase tracking-wider text-text-muted">
-              Tarefas
-            </p>
-            <Suspense fallback={<div className="flex-1" />}>
-              <ArvoreNav clientes={arvore} />
-            </Suspense>
-          </>
-        ) : null}
 
         <Separator />
 

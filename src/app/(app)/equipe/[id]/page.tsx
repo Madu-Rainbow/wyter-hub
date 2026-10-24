@@ -215,7 +215,7 @@ export default async function PessoaPage({
                 {pid === "-" ? (
                   g.nome
                 ) : (
-                  <Link href={`/projetos/${pid}`} className="text-accent hover:underline">
+                  <Link href={`/trabalho?projeto=${pid}`} className="text-accent hover:underline">
                     {g.nome}
                   </Link>
                 )}

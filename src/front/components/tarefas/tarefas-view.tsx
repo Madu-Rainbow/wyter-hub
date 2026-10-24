@@ -39,13 +39,16 @@ export function TarefasView({
   pessoas,
   ctx,
   abrirId = null,
+  abrirNova = false,
   filtrosIniciais,
 }: {
   tarefas: Tarefa[];
   pessoas: PessoaOpt[];
   ctx: Ctx;
-  /** Abre o painel desta tarefa ao montar (rota /tarefas/[chave]). */
+  /** Abre o painel desta tarefa ao montar (rota /trabalho?tarefa=). */
   abrirId?: string | null;
+  /** Abre o painel de nova tarefa ao montar (?nova=1). */
+  abrirNova?: boolean;
   filtrosIniciais?: Partial<Filtros>;
 }) {
   const router = useRouter();
@@ -57,7 +60,11 @@ export function TarefasView({
   const [, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ id: string | null; status: string } | null>(
-    abrirId ? { id: abrirId, status: "backlog" } : null,
+    abrirId
+      ? { id: abrirId, status: "backlog" }
+      : abrirNova
+        ? { id: null, status: "backlog" }
+        : null,
   );
   const [filtros, setFiltros] = useState<Filtros>({ ...FILTROS_VAZIOS, ...filtrosIniciais });
   const [por, setPor] = useState<Agrupar>("status");
@@ -329,7 +336,11 @@ export function TarefasView({
         onOpenChange={(o) => {
           if (o) return;
           setSheet(null);
-          if (abrirId && aberta) router.replace(`/tarefas?projeto=${aberta.projeto_id}`);
+          if (abrirId) {
+            const p = new URLSearchParams(params.toString());
+            p.delete("tarefa");
+            router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+          }
         }}
         tarefa={aberta}
         novoStatus={sheet?.status ?? "backlog"}

@@ -1,6 +1,7 @@
 "use client";
 
 import type { NoCliente } from "@front/lib/arvore";
+import { trabalhoHref } from "@front/lib/trabalho";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -57,6 +58,12 @@ export function ArvoreNav({ clientes }: { clientes: NoCliente[] }) {
           className="w-full rounded-md border border-border bg-bg py-1.5 pl-7 pr-2 text-sm text-text focus:border-accent focus:outline-none"
         />
       </div>
+      <Link
+        href="/trabalho"
+        className={`mx-1 mb-1 ${linha(!ativo.cliente && !ativo.contrato && !ativo.projeto)}`}
+      >
+        Tudo
+      </Link>
       <ul className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
         {clientes.map((c) => {
           const cliOk = !q || casa(c.nome);
@@ -87,7 +94,7 @@ export function ArvoreNav({ clientes }: { clientes: NoCliente[] }) {
                   )}
                 </button>
                 <Link
-                  href={`/tarefas?cliente=${c.id}`}
+                  href={trabalhoHref({ cliente: c.id })}
                   className={linha(ativo.cliente === c.id && !ativo.contrato && !ativo.projeto)}
                 >
                   <span className="truncate">{c.nome}</span>
@@ -122,7 +129,7 @@ export function ArvoreNav({ clientes }: { clientes: NoCliente[] }) {
                             </span>
                           ) : (
                             <Link
-                              href={`/tarefas?contrato=${k.id}`}
+                              href={trabalhoHref({ cliente: c.id, contrato: k.id })}
                               className={linha(ativo.contrato === k.id && !ativo.projeto)}
                             >
                               <span className="truncate">{k.nome}</span>
@@ -135,7 +142,11 @@ export function ArvoreNav({ clientes }: { clientes: NoCliente[] }) {
                             {k.projetos.map((p) => (
                               <li key={p.id}>
                                 <Link
-                                  href={`/tarefas?projeto=${p.id}`}
+                                  href={trabalhoHref({
+                                    cliente: c.id,
+                                    contrato: semContrato ? undefined : k.id,
+                                    projeto: p.id,
+                                  })}
                                   className={linha(ativo.projeto === p.id)}
                                 >
                                   <span className="truncate">{p.nome}</span>
