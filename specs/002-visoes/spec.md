@@ -27,6 +27,10 @@ Referência de funcionamento: Trello (kanban), Jira (tabela, filtros, atividade)
 - **FR-002-15**: Convidado é somente leitura (sem edição, sem arrastar).
 - **Fora desta versão**: ordem manual dos cards dentro da coluna (exige coluna de posição no banco).
 
+## Regra global de layout
+
+- **FR-002-00**: Toda tela DEVE caber na viewport do usuário: se a tela tem altura X e largura Y, o conteúdo nunca excede X por Y. A página não rola; apenas regiões internas (listas, tabelas, painéis laterais, colunas do kanban) rolam. Espaçamentos, tamanhos de fonte e dimensões de componentes são fluidos (`clamp`, `fr`, `minmax`, `h-dvh`, `min-h-0`/`min-w-0`) e se adaptam a qualquer resolução, de 1280x720 a telas grandes. Vale para todas as telas novas e existentes, incluindo `/dataware`.
+
 ## Hierarquia e árvore (Cliente > Contrato > Projeto > Tarefa > Subtarefa)
 
 - **FR-002-16**: Hierarquia obrigatória, no modelo Jira/ClickUp: Cliente contém Contratos; Contrato contém Projetos; Projeto contém Tarefas; Tarefa contém Subtarefas. Toda tarefa pertence a um projeto, e portanto tem cliente e contrato derivados do projeto. Projeto novo exige cliente e contrato (contrato do mesmo cliente).
