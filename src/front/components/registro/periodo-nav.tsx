@@ -4,6 +4,7 @@ const ABAS = [
   ["hoje", "Hoje"],
   ["ontem", "Ontem"],
   ["semana", "Semana"],
+  ["mes", "Mês"],
 ] as const;
 
 /** Alternância Hoje/Ontem/Semana + seletor de data. `extra` preserva outros filtros (GET). */
@@ -52,6 +53,38 @@ export function PeriodoNav({
           Ir
         </button>
       </form>
+    </div>
+  );
+}
+
+/** Abas Painel | Relatório (mantém período e filtros na URL). */
+export function AbasVisao({
+  base,
+  aba,
+  params,
+}: {
+  base: string;
+  aba: string;
+  params: Record<string, string | undefined>;
+}) {
+  const href = (a: string) =>
+    `${base}?${new URLSearchParams(Object.entries({ ...params, aba: a }).filter(([, v]) => v) as [string, string][])}`;
+  return (
+    <div className="flex gap-4 border-b border-border text-sm" role="tablist">
+      {[
+        ["painel", "Painel"],
+        ["relatorio", "Relatório"],
+      ].map(([k, l]) => (
+        <Link
+          key={k}
+          href={href(k)}
+          role="tab"
+          aria-selected={aba === k}
+          className={`-mb-px border-b-2 px-1 py-1.5 ${aba === k ? "border-accent font-medium text-text" : "border-transparent text-text-muted hover:text-text"}`}
+        >
+          {l}
+        </Link>
+      ))}
     </div>
   );
 }

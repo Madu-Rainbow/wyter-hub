@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarCheck,
   CheckSquare,
+  FileText,
   FolderKanban,
   LayoutDashboard,
   LogOut,
@@ -20,7 +21,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NavLink } from "./nav-link";
 
-type NavItem = { href: string; label: string; icon: React.ReactNode };
+type NavItem = { href: string; label: string; icon: React.ReactNode; gestor?: boolean };
 
 const navItems: NavItem[] = [
   { href: "/painel", label: "Painel", icon: <LayoutDashboard className="size-4 shrink-0" /> },
@@ -31,6 +32,12 @@ const navItems: NavItem[] = [
   },
   { href: "/meu-dia", label: "Meu dia", icon: <CalendarCheck className="size-4 shrink-0" /> },
   { href: "/trabalho", label: "Trabalho", icon: <FolderKanban className="size-4 shrink-0" /> },
+  {
+    href: "/relatorios",
+    label: "Relatórios",
+    icon: <FileText className="size-4 shrink-0" />,
+    gestor: true,
+  },
   { href: "/clientes", label: "Clientes", icon: <Building2 className="size-4 shrink-0" /> },
   { href: "/equipe", label: "Equipe", icon: <Users className="size-4 shrink-0" /> },
   { href: "/dataware", label: "DataWare", icon: <Network className="size-4 shrink-0" /> },
@@ -112,9 +119,11 @@ export function Sidebar({
         <Separator />
 
         <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-          {navItems.map((item) => (
-            <NavLink key={item.href} {...item} collapsed={collapsed} />
-          ))}
+          {navItems
+            .filter((item) => !item.gestor || userRole === "diretor" || userRole === "consultor")
+            .map(({ gestor: _g, ...item }) => (
+              <NavLink key={item.href} {...item} collapsed={collapsed} />
+            ))}
           {isDiretor && (
             <>
               <Separator className="my-2" />
