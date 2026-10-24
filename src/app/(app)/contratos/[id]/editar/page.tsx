@@ -1,6 +1,7 @@
 import { ContratoForm } from "@front/components/contratos/contrato-form";
 import { Button } from "@front/components/ui/button";
 import { financeiroContratos } from "@front/lib/financeiro";
+import { semFinanceiro } from "@front/lib/papel";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { COLUNAS_CONTRATO } from "@front/lib/trabalho";
 import type { Database } from "@shared/types/supabase";
@@ -83,8 +84,12 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
       entidade: "contrato",
       entidade_id: id,
       verbo: "editou",
-      antes: antes as unknown as Database["public"]["Tables"]["evento"]["Insert"]["antes"],
-      depois: row as unknown as Database["public"]["Tables"]["evento"]["Insert"]["depois"],
+      antes: semFinanceiro(
+        antes,
+      ) as unknown as Database["public"]["Tables"]["evento"]["Insert"]["antes"],
+      depois: semFinanceiro(
+        row,
+      ) as unknown as Database["public"]["Tables"]["evento"]["Insert"]["depois"],
       cliente_id,
     });
     redirect(`/trabalho?contrato=${id}`);

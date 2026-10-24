@@ -1,5 +1,6 @@
 import { ContratoForm } from "@front/components/contratos/contrato-form";
 import { Button } from "@front/components/ui/button";
+import { semFinanceiro } from "@front/lib/papel";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import type { Database } from "@shared/types/supabase";
 import { ArrowLeft } from "lucide-react";
@@ -74,7 +75,9 @@ export default async function NovoContratoPage({
       entidade: "contrato",
       entidade_id: novo.id,
       verbo: "criou",
-      depois: row as unknown as Database["public"]["Tables"]["evento"]["Insert"]["depois"],
+      depois: semFinanceiro(
+        row,
+      ) as unknown as Database["public"]["Tables"]["evento"]["Insert"]["depois"],
       cliente_id,
     });
     redirect(`/trabalho?contrato=${novo.id}`);
