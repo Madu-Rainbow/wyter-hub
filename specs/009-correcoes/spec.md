@@ -86,3 +86,84 @@ Bateria 1 (2026-10-24, sem sessão logada): `tsc`, `vitest`, `biome`, fumaça de
 3. S-02, S-10, S-11 (ações do usuário no painel do Supabase).
 4. F-01 a F-04 (filtros e rotas), T-01/T-02 (testes automatizados).
 5. Fase 2 de combobox/botões, F-05 a F-12.
+
+## 7. Bateria 2 (Playwright logado)
+
+Parcial 2026-10-24 10:20 (interrompida pelo usuário). Conta admin de desenvolvimento, dev server local, banco remoto. Capturas em `.playwright-mcp/qa-*.png` (dentro do repo, ignoradas pelo Playwright MCP; não commitar). Contagem: 14 PASSA, 9 FALHA, 4 BLOQUEADO, 8 NÃO TESTADO.
+
+### 7.1 Resultados
+
+| ID | Tela/Fluxo | Resultado | Evidência | Estado |
+|---|---|---|---|---|
+| B2-01 | Login com senha errada | PASSA | Mostra "E-mail ou senha inválidos" | FEITO |
+| B2-02 | Login correto e redirecionamento a /painel | PASSA | `/` redireciona para `/painel` | FEITO |
+| B2-03 | Sair e rota protegida sem sessão | NÃO TESTADO | Interrompido | FALTA testar |
+| B2-04 | Navegação: Painel, Minhas tarefas, Clientes, Equipe, DataWare, Usuários, Perfil, Trabalho | PASSA | Sem erro de console exceto os itens abaixo | FEITO |
+| B2-05 | Navegação: Meu dia e Relatórios | FALHA | HTTP 500, "This page couldn't load" (C-09) | FALTA corrigir |
+| B2-06 | /contratos | PASSA | Redireciona para `/trabalho?aba=geral` (esperado, F-03 relacionado) | FEITO |
+| B2-07 | Sidebar recolhe e lembra | PASSA (parcial) | Aparece recolhida/expandida entre cargas; persistência não validada após logout | FALTA validar |
+| B2-08 | Layout sem rolagem da página em 1280x720, 1366x768, 1536x864, 1920x1080, 390x844 | FALHA só no Painel | `documentElement` nunca estoura; mas o Painel rola num contêiner interno: 1125/720, 1147/768, 1191/864, 1273/1080, 2393/844. Demais telas (minhas-tarefas, trabalho, clientes, equipe, dataware, usuarios, perfil, trabalho com cliente) sem estouro (F-13) | FALTA corrigir |
+| B2-09 | Trabalho: árvore Cliente > Contrato > Projeto, nó "Tudo" compacto | PASSA | Árvore com contadores, "Tudo 22" compacto, abas por nível (Visão geral, Tarefas, Projetos, Contratos, Dossiê e registros) | FEITO |
+| B2-10 | Criar tarefa (modal Nova tarefa) | FALHA | 400 em `POST /rest/v1/tarefa`; mensagem na tela: `record "new" has no field "entidade_tipo"` (C-08) | FALTA corrigir |
+| B2-11 | Arrastar no kanban e persistir | FALHA | `PATCH tarefa` 400, mesmo erro (C-08) | FALTA corrigir |
+| B2-12 | Modal: comentar, checklist | FALHA | `POST comentario` 400 e checklist com o mesmo erro (C-08). Etiqueta, membro, anexo, copiar, arquivar: BLOQUEADO (mesma causa, tabelas cobertas pelo trigger `trg_org_modal`) | FALTA corrigir |
+| B2-13 | Lista, Tabela, Gantt (renderizam) | PASSA (parcial) | Alternância funciona; Gantt sem tarefas com datas, então "mover barra" BLOQUEADO (sem dados e escrita quebrada) | FALTA testar |
+| B2-14 | Atalhos n / Esc | NÃO TESTADO | Interrompido (Esc fecha o modal: PASSA) | FALTA testar |
+| B2-15 | Painel: gráficos, medidor, mapa | PASSA (parcial) | Todos renderizam; mapa enquadra Cuiabá/Várzea Grande; ver F-14 a F-17 para falhas visuais | FALTA corrigir |
+| B2-16 | Painel: filtragem cruzada | PASSA | Clique em "Crítica" gera `?f_prio=critica`, KPI "Tarefas abertas" 22 para 7, demais gráficos mudam; "Limpar tudo" restaura | FEITO |
+| B2-17 | Painel: console limpo | FALHA | React: "Cannot update a component (Router) while rendering PainelInterativo" (C-10) | FALTA corrigir |
+| B2-18 | Contratos/Painel: valores visíveis ao diretor (situação, valor) | FALHA | Valor "—" e "Total: R$ 0,00"; Painel "R$ 0,00" nos contratos e segmentos. `financeiroContratos` ignora `error` e devolve mapa vazio, então falha de view/REVOKE fica invisível (C-11). Situação de andamento aparece (Encerrado, Sem projeto) | FALTA corrigir |
+| B2-19 | DataWare: grafo, busca, filtros, clique no nó, painel de dados | PASSA | Busca "Pão" destaca o nó e lista resultado; clique mostra dados e 7 conexões; painel Filtros com Cliente/Contrato/Projeto/Pessoa/Status, Carregar logs, Só vizinhança, Nível | FEITO (ajuste ao tamanho da tela: grafo ocupa parte central com 2 nós soltos nas bordas, F-18) |
+| B2-20 | Meu dia (painel visual, relatório narrativo, salvar) | BLOQUEADO | Página 500 (C-09) | FALTA testar |
+| B2-21 | Usuários: lista, convidar `qa+teste@example.com` (analista), revogar | PASSA | Convite aparece e some após revogar; 1 ativo, 4 convidados | FEITO (layout das colunas desalinhado entre linhas, F-19) |
+| B2-22 | Comboboxes com pesquisa (projeto na tarefa, UF e responsável no cliente) | PASSA | Filtram ao digitar. Observação: projeto na nova tarefa lista projetos de todos os clientes mesmo no escopo de um cliente (F-20) | FEITO |
+| B2-23 | Cadastrar cliente, contato, dado sensível (CPF), revelar | PASSA | Cliente criado, contato listado, CPF cifrado, "Revelar" pede confirmação e mostra o valor; evento de auditoria "gravou_sensivel" aparece (S-08 validado em execução, UPDATE/DELETE em `evento` não testados) | FEITO |
+| B2-24 | Botões: consistência visual | NÃO TESTADO a fundo | Observados botões com contorno (modal) e preenchidos (ações) coerentes; Gantt tem rolagem dupla (F-21) | FALTA testar |
+| B2-25 | Segurança por papel | BLOQUEADO | Só há conta diretor. Sugestão: criar contas de teste por papel (consultor, analista, convidado) e repetir RLS, valores financeiros e dados sensíveis | FALTA |
+| B2-26 | MCP: token inválido | PASSA | 401 | FEITO |
+| B2-27 | MCP: initialize e tools/list | PASSA | 200, `serverInfo wyter-hub`; 15 ferramentas | FEITO |
+| B2-28 | MCP: listar_clientes, listar_contratos, listar_projetos, listar_tarefas, resumo_painel, meu_dia, relatorio_diario | PASSA | Sem R$, CPF/CNPJ, telefone ou e-mail nas respostas (regex) | FEITO |
+| B2-29 | MCP: buscar | FALHA | Argumento `{"query":...}` rejeitado: "consulta: Invalid input: expected string, received undefined" (nome do parâmetro é `consulta`, mas a documentação do usuário/spec pode usar `query`; conferir) | FALTA verificar |
+| B2-30 | MCP: obter_tarefa, criar_tarefa, comentar_tarefa, atualizar/mover | NÃO TESTADO | Interrompido; esperar correção de C-08, pois escrita em tarefa usa o mesmo trigger | FALTA testar |
+| B2-31 | MCP: revogar token | PASSA | Token "[QA]" revogado; `tools/list` com ele retorna 401 | FEITO |
+| B2-32 | Console/rede por tela | PASSA (parcial) | Único 4xx recorrente: `/favicon.ico` 404 (F-22); 400 do C-08 nas escritas de tarefa; hidratação divergente em /trabalho?aba=contratos (provável efeito de recarga a quente) | FALTA corrigir |
+| B2-33 | F-12 (Dossiê, dados sensíveis na UI) | PASSA | Ver B2-23 | FEITO |
+| B2-34 | Fase 2 combobox/botões (tarefas, modal, clientes, dossiê) | PASSA (parcial) | Formulário de cliente, contato, dossiê e modal renderizam e usam combobox | FALTA testar (Gantt e Lista com combobox) |
+
+### 7.2 Novos defeitos
+
+| ID | Defeito | Evidência | Estado |
+|---|---|---|---|
+| C-08 | Trigger `checar_mesmo_org_modal` (migration `20261024000012_modal_tarefa.sql`, ~linhas 164 e 168) avalia `NEW.entidade_tipo` em tabelas que não têm a coluna (`tarefa`, `comentario`, `checklist`...). PL/pgSQL não faz curto-circuito. Quebra TODA escrita em `tarefa`, `comentario`, `checklist` e demais tabelas do modal. Gravidade: bloqueante | `record "new" has no field "entidade_tipo"` na UI; 400 em POST/PATCH `tarefa` e POST `comentario` | FALTA (migration nova: testar `TG_TABLE_NAME` em `IF` separado, com `CASE` ou blocos aninhados, antes de tocar em `NEW.<campo>`) |
+| C-09 | `/meu-dia` e `/relatorios` respondem 500: "Refs cannot be used in Server Components, nor passed to Client Components". Causa: `<VisaoRegistro ref={ref} ...>` em `src/app/(app)/meu-dia/page.tsx:53` e `src/app/(app)/relatorios/page.tsx:62`; `ref` é prop reservada do React. Renomear a prop (ex.: `dataRef`) em `VisaoRegistro` (`src/front/components/registro/visao.tsx`) e nos dois usos | Log do dev server (digest 1945451948) e HTTP 500 | FALTA |
+| C-10 | `PainelInterativo` chama atualização do roteador durante a renderização (setState em render) | Erro de console ao filtrar no Painel; indicador "1 Issue" do Next | FALTA |
+| C-11 | Valores financeiros vazios para o diretor (R$ 0,00 / "—") e `financeiroContratos`/`impactoAditivos` em `src/front/lib/financeiro.ts` descartam `error` da consulta, escondendo a falha | Aba Contratos do cliente Pão Dourado; Painel | FALTA (conferir se há valor nos dados remotos; se houver, a view/REVOKE falha para o diretor; tratar e registrar `error`) |
+| C-12 | Diálogos nativos do navegador (`window.confirm`/`prompt`) em vez de diálogos da plataforma, contra o requisito do usuário. Ocorrências: `src/front/components/tarefa-sheet.tsx:148`, `usuarios/usuario-linha.tsx:121`, `clientes/sensiveis-lista.tsx:29`, `tarefas/barra-lateral.tsx:143` (prompt) e `:160`, `tarefas/comentarios-tab.tsx:367`, `tarefas/checklist-tab.tsx:121` (prompt) e `:132`, `tarefas/anexos-sec.tsx:87`, `mcp/tokens-mcp.tsx:79`. Nenhum `alert` encontrado | `grep` em `src` | FALTA (usar `AlertDialog`/diálogo do shadcn; prompt vira input em popover) |
+| F-13 | Painel rola dentro do contêiner (1125 a 2393 px de altura útil) e não cabe em nenhuma das 5 resoluções, contra FR-002-00/006 | Seção 7.1, B2-08 | FALTA (compactar mosaico ou aceitar rolagem interna e registrar na spec) |
+| F-14 | Painel: dois cartões pequenos (prioridade e status) sem título visível; medidor com rótulos de eixo cortados ("%" e "15"); agulha em 0,4% desenhada na horizontal; "Carga por pessoa" com 0 h para todos (tarefas sem estimativa) e barras ausentes | `.playwright-mcp/qa-painel*.png` | FALTA |
+| F-15 | Painel: donut "Contratos" minúsculo com texto estourando; contratos "Em andamento 0" apesar de 4 contratos | idem | FALTA |
+| F-16 | Dados: projetos do cliente aparecem "Sem contrato" e contrato CT-2026-002 mostra "Sem projeto", "0/0 tarefas"; árvore mostra Bem Viver com 2 contratos na visão geral e 1 na árvore | `/trabalho?cliente=...` | FALTA (conferir vínculo projeto-contrato nos dados e na árvore) |
+| F-17 | Tarefa criada em escopo de cliente oferece projetos de todos os clientes; mensagem de erro do servidor fica "grudada" no modal (aparece 5 vezes) | B2-22 | FALTA |
+| F-18 | DataWare: grafo centralizado ocupa pouco da área, com nós isolados nas bordas | `qa-dw2.png` | FALTA (ajustar zoom ao conteúdo) |
+| F-19 | Usuários: colunas desalinhadas entre a linha do diretor e as demais | `qa-usr.png` | FALTA |
+| F-20 | Login limpa o campo e-mail após erro (só a senha deveria ser limpa) | B2-01 | FALTA |
+| F-21 | Gantt: rolagem vertical dupla, texto "Nenhuma tarefa com datas" cortado, lista "Sem datas" cortada no rodapé | `qa-v-Gantt.png` | FALTA |
+| F-22 | `/favicon.ico` retorna 404 em todas as telas | console | FALTA |
+| F-23 | Eventos recentes exibem códigos crus ("gravou_sensivel dado_sensivel") | `qa-contato2.png` | FALTA (rótulos em PT-BR) |
+
+### 7.3 Itens existentes verificados
+
+S-08 (revelar e gravar sensível: FEITO em execução; bloqueio UPDATE/DELETE em `evento` e RLS por papel ainda não testados), S-09/S-14 (Usuários: 4 convites pendentes `@ficticio.com` listados, vínculo ainda a revisar pelo usuário), F-12 (dossiê e sensíveis: FEITO; Meu dia: BLOQUEADO por C-09), C-02 (build compila e as telas abrem: FEITO), C-01 (tipos: telas abrem, `tsc` não reexecutado).
+
+### 7.4 Não testado (interrompido)
+
+Logout e rota protegida, atalhos n/Esc, Gantt (mover barra), modal (etiqueta, membro, anexo, copiar, arquivar, após C-08), Meu dia, Relatórios, Equipe e Perfil em profundidade, formulários de projeto/contrato, fase 2 de combobox na Lista/Tabela, comboboxes dos filtros, botões, MCP `obter_tarefa/criar_tarefa/comentar_tarefa`, `evento` imutável, papéis menores.
+
+### 7.5 Dados de teste criados e limpeza
+
+- Convite `qa+teste@example.com`: revogado.
+- Token MCP "[QA]": revogado (401 confirmado).
+- **Não limpo**: cliente "[QA] Cliente Teste" (id `8ebbe493-22bd-49bb-bf75-5f5f7b9b4431`) com contato "[QA] Contato" e um dado sensível CPF (cifrado); eventos de auditoria correspondentes (append-only, ficam). A UI não oferece arquivar/excluir cliente. Pedir ao usuário para remover pelo SQL do painel Supabase (soft delete ou DELETE como diretor).
+- Nenhuma tarefa [QA] criada (C-08 impediu).
+
+Parcial 2026-10-24 10:20 (interrompida pelo usuário)
