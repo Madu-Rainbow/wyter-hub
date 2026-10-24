@@ -1215,8 +1215,42 @@ export type Database = {
           },
         ];
       };
+      dw_aresta: {
+        Row: {
+          destino: string | null;
+          origem: string | null;
+          relacao: string | null;
+        };
+        Relationships: [];
+      };
+      dw_no: {
+        Row: {
+          atributos: Json | null;
+          cliente_id: string | null;
+          id: string | null;
+          org_id: string | null;
+          rotulo: string | null;
+          status: string | null;
+          tipo: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
+      dw_eventos: {
+        Args: {
+          p_ate?: string;
+          p_cliente?: string;
+          p_de?: string;
+          p_limite?: number;
+          p_pessoa?: string;
+        };
+        Returns: Json;
+      };
+      dw_vizinhanca: {
+        Args: { no_id: string; profundidade?: number };
+        Returns: Json;
+      };
       gerar_chave_projeto: {
         Args: { p_nome: string; p_org: string };
         Returns: string;
