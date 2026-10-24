@@ -146,11 +146,12 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json(rpcErr(null, -32700, "JSON invalido"), 400); }
 
   const lote = Array.isArray(body) ? body : [body];
-  if (lote.length > 20) return json(rpcErr(null, -32600, "Lote grande demais"), 400);
-  if (lote.some((m) => m?.method === "tools/call")) {
-    const tx = await admin.rpc("mcp_checar_taxa", { p_token: me.token_id });
-    const r = Array.isArray(tx.data) ? tx.data[0] : null;
-    if (r && (r.ultimo_minuto >= 60 || r.ultimo_dia >= 2000)) return json(rpcErr(body?.id, -32029, "Limite de chamadas excedido (60/min, 2000/dia)"), 429);
+  if (lote.length > 10) return json(rpcErr(null, -32600, "Lote grande demais (max. 10)"), 400);
+  const n = lote.filter((m) => m?.method === "tools/call").length;
+  if (n > 0) {
+    const r = await admin.rpc("mcp_reservar_taxa", { p_token: me.token_id, p_n: n });
+    if (r.error) return json(rpcErr(null, -32603, "Erro interno"), 500);
+    if (r.data !== true) return json(rpcErr(null, -32029, "Limite de chamadas excedido (60/min, 2000/dia)"), 429);
   }
   const out = (await Promise.all(lote.map((m) => despachar(m, me)))).filter((x) => x !== null);
   if (!out.length) return json(null, 202);

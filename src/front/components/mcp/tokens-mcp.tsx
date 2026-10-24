@@ -156,7 +156,11 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
       </form>
 
       {novo && (
-        <div className="space-y-2 rounded-md border border-border bg-surface p-4" role="status">
+        <div
+          className="space-y-2 rounded-md border border-border bg-surface p-4"
+          role="status"
+          aria-live="polite"
+        >
           <p className="text-sm font-medium text-text">
             Copie o token agora. Ele não será mostrado de novo.
           </p>
