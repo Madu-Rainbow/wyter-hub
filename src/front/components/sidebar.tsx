@@ -5,6 +5,7 @@ import { Separator } from "@front/components/ui/separator";
 import { TooltipProvider } from "@front/components/ui/tooltip";
 import {
   Building2,
+  CalendarCheck,
   CheckSquare,
   FolderKanban,
   LayoutDashboard,
@@ -12,7 +13,7 @@ import {
   Network,
   PanelLeftClose,
   PanelLeftOpen,
-  ShieldCheck,
+  UserCog,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
     label: "Minhas tarefas",
     icon: <CheckSquare className="size-4 shrink-0" />,
   },
+  { href: "/meu-dia", label: "Meu dia", icon: <CalendarCheck className="size-4 shrink-0" /> },
   { href: "/trabalho", label: "Trabalho", icon: <FolderKanban className="size-4 shrink-0" /> },
   { href: "/clientes", label: "Clientes", icon: <Building2 className="size-4 shrink-0" /> },
   { href: "/equipe", label: "Equipe", icon: <Users className="size-4 shrink-0" /> },
@@ -36,9 +38,9 @@ const navItems: NavItem[] = [
 
 const adminItems: NavItem[] = [
   {
-    href: "/admin/emails",
-    label: "E-mails autorizados",
-    icon: <ShieldCheck className="size-4 shrink-0" />,
+    href: "/admin/usuarios",
+    label: "Usuários",
+    icon: <UserCog className="size-4 shrink-0" />,
   },
 ];
 
