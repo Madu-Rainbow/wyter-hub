@@ -12,7 +12,7 @@ import { createClient } from "@front/lib/supabase/client";
 import { trabalhoHref } from "@front/lib/trabalho";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { atualizarTarefa, copiarTarefa, criarTarefa, moverTarefa } from "./tarefas/acoes";
 import { AnexosSec } from "./tarefas/anexos-sec";
 import { BarraLateral } from "./tarefas/barra-lateral";
@@ -88,6 +88,9 @@ export function TarefaSheet({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
+  // Erro antigo nao fica "grudado" ao reabrir o painel ou trocar de tarefa.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: so reseta ao abrir/trocar de tarefa
+  useEffect(() => setErro(null), [open, tarefa?.id]);
   const [rev, setRev] = useState(0);
   const t = tarefa ?? vazia(novoStatus);
   const editando = tarefa !== null;
@@ -581,7 +584,6 @@ export function TarefaSheet({
                 }
                 onExcluir={excluir}
               />
-              {erro && <p className="mt-2 text-xs text-red-600">{erro}</p>}
             </aside>
           </div>
         )}

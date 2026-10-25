@@ -8,6 +8,7 @@ import type {
 import { TarefasView } from "@front/components/tarefas/tarefas-view";
 import { carregarArvore } from "@front/lib/arvore";
 import { createSupabaseServer } from "@front/lib/supabase/server";
+import { lerTodas } from "@front/lib/tarefas";
 import { notFound, redirect } from "next/navigation";
 
 export type Escopo = {
@@ -59,16 +60,21 @@ export async function TarefasDoEscopo({
   if ((escopo.cliente && !clienteNo) || (escopo.contrato && !contratoNo)) notFound();
 
   const ids = noEscopo.map((p) => p.id);
-  const [{ data: tarefas }, { data: eu }, { data: pessoas }] = await Promise.all([
+  const [tarefas, { data: eu }, { data: pessoas }] = await Promise.all([
+    // Paginado: o PostgREST corta cada resposta em 1000 linhas.
     ids.length
-      ? supabase
-          .from("tarefa")
-          .select(SELECT)
-          .in("projeto_id", ids)
-          .is("deleted_at", null)
-          .order("urgencia", { ascending: false })
-          .order("esforco", { ascending: false })
-      : Promise.resolve({ data: [] }),
+      ? lerTodas((de, ate) =>
+          supabase
+            .from("tarefa")
+            .select(SELECT)
+            .in("projeto_id", ids)
+            .is("deleted_at", null)
+            .order("urgencia", { ascending: false })
+            .order("esforco", { ascending: false })
+            .order("id")
+            .range(de, ate),
+        )
+      : Promise.resolve([]),
     supabase
       .from("pessoa")
       .select("id, org_id, papel")
@@ -84,7 +90,7 @@ export async function TarefasDoEscopo({
       .order("nome"),
   ]);
 
-  const lista: Tarefa[] = (tarefas ?? []).map((t) => {
+  const lista: Tarefa[] = tarefas.map((t) => {
     const { n, cl, m, e, capa, ...resto } = t as unknown as Tarefa & {
       n: { count: number }[] | null;
       cl: { itens: ChecklistItem[] }[] | null;
@@ -112,7 +118,7 @@ export async function TarefasDoEscopo({
   };
 
   return (
-    <div className="min-w-0">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <TarefasView
         key={JSON.stringify([escopo, abrirNumero, nova])}
         tarefas={lista}
@@ -123,7 +129,8 @@ export async function TarefasDoEscopo({
         ctx={{
           orgId: eu?.org_id ?? "",
           projetoId: escopo.projeto ?? null,
-          projetos,
+          // So os projetos do escopo: criar/mover tarefa nao oferece projeto de outro cliente.
+          projetos: noEscopo,
           meId: eu?.id ?? null,
           readOnly: !eu || eu.papel === "convidado",
         }}

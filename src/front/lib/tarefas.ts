@@ -48,3 +48,20 @@ export const fmtBytes = (n: number | null) =>
     : n < 1048576
       ? `${Math.max(1, Math.round(n / 1024))} KB`
       : `${(n / 1048576).toFixed(1)} MB`;
+
+/** Le todas as linhas em paginas de 1000 (o PostgREST corta cada resposta em 1000). Exige order estavel no `consulta`. */
+export async function lerTodas<T>(
+  consulta: (
+    de: number,
+    ate: number,
+  ) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const pagina = 1000;
+  const out: T[] = [];
+  for (let de = 0; ; de += pagina) {
+    const { data, error } = await consulta(de, de + pagina - 1);
+    if (error) throw new Error(error.message);
+    out.push(...(data ?? []));
+    if (!data || data.length < pagina) return out;
+  }
+}

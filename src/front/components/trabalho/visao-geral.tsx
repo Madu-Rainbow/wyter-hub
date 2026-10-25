@@ -5,10 +5,10 @@ import {
   SituacaoBadge,
   vigencia,
 } from "@front/components/contratos/situacao";
-import type { Arvore } from "@front/lib/arvore";
+import { type Arvore, SEM_CONTRATO } from "@front/lib/arvore";
 import { impactoAditivos } from "@front/lib/financeiro";
 import { createSupabaseServer } from "@front/lib/supabase/server";
-import { statusLabels } from "@front/lib/tarefas";
+import { lerTodas, statusLabels } from "@front/lib/tarefas";
 import { type Nivel, trabalhoHref } from "@front/lib/trabalho";
 import Link from "next/link";
 import { type ContratoItem, carregarContratos } from "./contratos-aba";
@@ -73,13 +73,18 @@ async function Atividades({ clienteId }: { clienteId: string }) {
 
 async function PorStatus({ projetoId }: { projetoId: string }) {
   const sb = await createSupabaseServer();
-  const { data } = await sb
-    .from("tarefa")
-    .select("status")
-    .eq("projeto_id", projetoId)
-    .is("deleted_at", null);
+  // Paginado: o PostgREST corta cada resposta em 1000 linhas.
+  const data = await lerTodas((de, ate) =>
+    sb
+      .from("tarefa")
+      .select("id, status")
+      .eq("projeto_id", projetoId)
+      .is("deleted_at", null)
+      .order("id")
+      .range(de, ate),
+  );
   const n = new Map<string, number>();
-  for (const t of data ?? []) n.set(t.status, (n.get(t.status) ?? 0) + 1);
+  for (const t of data) n.set(t.status, (n.get(t.status) ?? 0) + 1);
   return (
     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
       {Object.entries(statusLabels).map(([k, label]) => (
@@ -199,7 +204,8 @@ export async function VisaoGeral({
               >
                 <span className="font-medium text-text">{c.nome}</span>
                 <span className="tabular-nums text-text-muted">
-                  {c.contratos.length} contratos · {c.abertas} tarefas abertas
+                  {c.contratos.filter((k) => k.id !== SEM_CONTRATO).length} contratos · {c.abertas}{" "}
+                  tarefas abertas
                 </span>
               </Link>
             </li>

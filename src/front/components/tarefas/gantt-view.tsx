@@ -235,7 +235,7 @@ export function GanttView({
   });
 
   return (
-    <div className="flex h-[calc(100dvh-17rem)] min-h-80 flex-col gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
       <div className="flex shrink-0 items-center gap-2">
         <div
           className="inline-flex overflow-hidden rounded-md border border-border"
@@ -301,7 +301,7 @@ export function GanttView({
           <div
             ref={corpo}
             className="relative"
-            style={{ height: Math.max(linhas.length, 1) * ROW }}
+            style={{ height: Math.max(linhas.length * ROW, 56) }}
             onDragOver={(e) => !readOnly && e.preventDefault()}
             onDrop={aoSoltar}
           >
@@ -391,14 +391,16 @@ export function GanttView({
               ),
             )}
             {linhas.length === 0 && (
-              <p className="sticky left-0 p-3 text-sm text-text-muted">Nenhuma tarefa com datas.</p>
+              <p className="sticky left-0 block p-3 text-sm text-text-muted">
+                Nenhuma tarefa com datas.
+              </p>
             )}
           </div>
         </div>
       </div>
 
       {semDatas.length > 0 && (
-        <div className="max-h-24 shrink-0 overflow-y-auto rounded-md border border-border bg-surface p-2">
+        <div className="shrink-0 rounded-md border border-border bg-surface p-2">
           <p className="mb-1 text-xs uppercase tracking-wider text-text-muted">
             Sem datas ({semDatas.length}){!readOnly && " — arraste para a grade para agendar"}
           </p>
@@ -453,6 +455,39 @@ function LinhaTarefa({
   const rotulo = `${t.titulo}, ${ddmm(diso(a))} a ${ddmm(diso(b))}, ${statusLabels[t.status] ?? t.status}${late ? ", atrasada" : ""}`;
   const pr = progresso(t);
   const alca = "absolute inset-y-0 z-10 w-1.5 cursor-ew-resize";
+  // So uma data: marcador no dia, sem barra (nao inventa duracao).
+  if (!(t.data_inicio && t.data_prazo))
+    return (
+      <div
+        className="absolute left-0 flex border-b border-border/60"
+        style={{ top, height: ROW, width: LEFT + largura }}
+      >
+        <div
+          className="sticky left-0 z-20 flex shrink-0 items-center gap-1 border-r border-border bg-surface px-2 text-xs text-text"
+          style={{ width: LEFT, paddingLeft: 8 + depth * 14 }}
+        >
+          <span className="shrink-0 tabular-nums text-text-muted">{t.chave}</span>
+          <span className="truncate">{t.titulo}</span>
+        </div>
+        <div className="relative" style={{ width: largura }}>
+          <button
+            type="button"
+            aria-label={rotulo}
+            title={rotulo}
+            onClick={() => onOpen(t)}
+            className={`absolute size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[2px] focus-visible:outline-2 focus-visible:outline-accent ${COR[t.status] ?? "bg-slate-400"} ${late ? "ring-2 ring-red-600" : ""}`}
+            style={{ left: (a - ini) * px + px / 2, top: ROW / 2 }}
+          />
+          <span
+            className="pointer-events-none absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] text-text-muted"
+            style={{ left: (a - ini) * px + px + 6 }}
+          >
+            {late ? "! " : ""}
+            {t.titulo}
+          </span>
+        </div>
+      </div>
+    );
   return (
     <div
       className="absolute left-0 flex border-b border-border/60"

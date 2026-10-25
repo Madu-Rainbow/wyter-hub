@@ -8,6 +8,7 @@ import { VisaoGeral } from "@front/components/trabalho/visao-geral";
 import { carregarArvore } from "@front/lib/arvore";
 import { ehGestor } from "@front/lib/papel";
 import { createSupabaseServer } from "@front/lib/supabase/server";
+import { lerTodas } from "@front/lib/tarefas";
 import { ABAS, type Nivel, trabalhoHref } from "@front/lib/trabalho";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -82,13 +83,18 @@ export default async function TrabalhoPage({
 
   const cont: Cont = new Map();
   if (idsProjetos.length && nivel !== "tudo") {
-    const { data } = await sb
-      .from("tarefa")
-      .select("projeto_id, status")
-      .in("projeto_id", idsProjetos)
-      .neq("status", "cancelada")
-      .is("deleted_at", null);
-    for (const t of data ?? []) {
+    // Lê todas as linhas em páginas (o PostgREST corta em 1000) para o progresso não truncar.
+    const data = await lerTodas((de, ate) =>
+      sb
+        .from("tarefa")
+        .select("id, projeto_id, status")
+        .in("projeto_id", idsProjetos)
+        .neq("status", "cancelada")
+        .is("deleted_at", null)
+        .order("id")
+        .range(de, ate),
+    );
+    for (const t of data) {
       const c = cont.get(t.projeto_id) ?? { feitas: 0, total: 0 };
       c.total++;
       if (t.status === "concluida") c.feitas++;
@@ -126,7 +132,10 @@ export default async function TrabalhoPage({
           cont={cont}
           idsProjetos={idsProjetos}
         />
-        <div className="min-h-0 flex-1 overflow-y-auto pt-4">
+        {/* Gantt tem rolagem propria (grade); aqui nao rola para nao haver rolagem dupla. */}
+        <div
+          className={`flex min-h-0 flex-1 flex-col pt-4 ${aba === "tarefas" && sp.visao === "gantt" ? "overflow-hidden" : "overflow-y-auto"}`}
+        >
           {aba === "tarefas" ? (
             <TarefasDoEscopo
               escopo={{

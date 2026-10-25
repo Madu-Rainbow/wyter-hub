@@ -80,6 +80,18 @@ export function TarefasView({
   );
   const tarefas = useMemo(() => enriquecer(bruto, ctx.projetos), [bruto, ctx.projetos]);
 
+  /** Abre o painel e grava ?tarefa=CHAVE na URL (FR-002-27). */
+  const abrir = useCallback(
+    (t: Tarefa) => {
+      setSheet({ id: t.id, status: t.status });
+      if (!t.chave) return;
+      const p = new URLSearchParams(params.toString());
+      p.set("tarefa", t.chave);
+      router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+    },
+    [params, pathname, router],
+  );
+
   const setVisao = (v: Visao) => {
     const p = new URLSearchParams(params.toString());
     p.set("visao", v);
@@ -106,8 +118,9 @@ export function TarefasView({
     (titulo: string, grupoKey: string) => {
       startTransition(async () => {
         const base: Partial<Tarefa> = { status: "backlog", ...patchDoGrupo(por, grupoKey) };
+        // Escopo amplo: sem projeto no escopo, o modal Nova tarefa pede o projeto (obrigatório).
         if (!ctx.projetoId && !base.projeto_id) {
-          setErro("Escolha um projeto na árvore ou use Nova tarefa para criar neste escopo.");
+          setSheet({ id: null, status: base.status ?? "backlog" });
           return;
         }
         const e = await criarTarefa(ctx, { titulo, ...base });
@@ -321,7 +334,7 @@ export function TarefasView({
           grupos={grupos}
           readOnly={ctx.readOnly}
           bloqueadas={bloqueadas}
-          onOpen={(t) => setSheet({ id: t.id, status: t.status })}
+          onOpen={abrir}
           onMove={(id, destino) => {
             const t = tarefas.find((x) => x.id === id);
             if (t) patch(t, patchDoGrupo(por, destino), "moveu");
@@ -335,20 +348,18 @@ export function TarefasView({
           pessoas={pessoas}
           readOnly={ctx.readOnly}
           bloqueadas={bloqueadas}
-          onOpen={(t) => setSheet({ id: t.id, status: t.status })}
+          onOpen={abrir}
           onPatch={patch}
           onCreate={criar}
         />
       )}
-      {visao === "tabela" && (
-        <TabelaView tarefas={filtradas} onOpen={(t) => setSheet({ id: t.id, status: t.status })} />
-      )}
+      {visao === "tabela" && <TabelaView tarefas={filtradas} onOpen={abrir} />}
       {visao === "gantt" && (
         <GanttView
           tarefas={filtradas}
           projetos={ctx.projetos}
           readOnly={ctx.readOnly}
-          onOpen={(t) => setSheet({ id: t.id, status: t.status })}
+          onOpen={abrir}
           onPatch={patch}
         />
       )}
@@ -358,7 +369,7 @@ export function TarefasView({
         onOpenChange={(o) => {
           if (o) return;
           setSheet(null);
-          if (abrirId) {
+          if (params.has("tarefa")) {
             const p = new URLSearchParams(params.toString());
             p.delete("tarefa");
             router.replace(`${pathname}?${p.toString()}`, { scroll: false });

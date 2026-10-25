@@ -9,7 +9,8 @@ export type NoCliente = { id: string; nome: string; abertas: number; contratos: 
 
 export type Arvore = { clientes: NoCliente[]; projetos: ProjetoOpt[] };
 
-const SEM_CONTRATO = "_sem";
+/** Chave do grupo "Sem contrato" (projetos com contrato_id nulo); nao e um contrato. */
+export const SEM_CONTRATO = "_sem";
 
 /** 3 queries paralelas (sem N+1); contagem de abertas via agregado embutido. Deduplicada por request. */
 export const carregarArvore = cache(async (): Promise<Arvore> => {
