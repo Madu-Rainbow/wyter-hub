@@ -253,7 +253,7 @@ function Barras({
 }
 
 const DIAS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"];
-function Calor({ semana, ref }: { semana: Estat["semana"]; ref: string }) {
+function Calor({ semana, dataRef }: { semana: Estat["semana"]; dataRef: string }) {
   const max = Math.max(1, ...semana.map((d) => d.eventos));
   return (
     <div>
@@ -265,7 +265,7 @@ function Calor({ semana, ref }: { semana: Estat["semana"]; ref: string }) {
           <div
             key={d.dia}
             title={`${dm(d.dia)}: ${d.eventos} ações`}
-            className={`rounded-sm border py-1.5 text-center ${d.dia === ref ? "border-text ring-2 ring-accent" : "border-border"}`}
+            className={`rounded-sm border py-1.5 text-center ${d.dia === dataRef ? "border-text ring-2 ring-accent" : "border-border"}`}
             style={{
               background: `color-mix(in srgb, var(--color-accent) ${Math.round((d.eventos / max) * 85)}%, white)`,
               color: d.eventos / max > 0.5 ? "#fff" : "var(--color-text)",
@@ -491,7 +491,7 @@ export function Cartoes({
 export function PainelPeriodo({
   est,
   dias,
-  ref,
+  dataRef,
   cores,
   nomes,
   tarefas,
@@ -500,7 +500,7 @@ export function PainelPeriodo({
 }: {
   est: Estat;
   dias: number;
-  ref: string;
+  dataRef: string;
   cores: Cores;
   nomes: { pessoas: Map<string, string>; clientes: Map<string, string> };
   tarefas: Map<string, TarefaInfo>;
@@ -571,7 +571,7 @@ export function PainelPeriodo({
       </Caixa>
       <Caixa titulo="Ritmo" className="min-h-56 lg:col-span-4 lg:col-start-5 lg:min-h-0">
         <div className="space-y-4">
-          <Calor semana={est.semana} ref={ref} />
+          <Calor semana={est.semana} dataRef={dataRef} />
           <Comparativo dados={est.comparativo} />
         </div>
       </Caixa>

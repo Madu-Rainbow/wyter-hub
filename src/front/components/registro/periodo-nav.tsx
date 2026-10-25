@@ -1,3 +1,4 @@
+import { Button } from "@front/components/ui/button";
 import Link from "next/link";
 
 const ABAS = [
@@ -46,12 +47,9 @@ export function PeriodoNav({
           aria-label="Data"
           className="h-9 rounded-md border border-input bg-surface px-2 text-sm tabular-nums"
         />
-        <button
-          type="submit"
-          className="h-9 rounded-md border border-border bg-surface px-3 text-sm hover:bg-secondary"
-        >
+        <Button type="submit" variant="secondary">
           Ir
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -18,7 +18,7 @@ export function VisaoRegistro(p: {
   subtitulo?: string;
   aba: string;
   periodo: string;
-  ref: string;
+  dataRef: string;
   dias: 1 | 7 | 30;
   d: Periodo;
   voz: "eu" | "equipe";
@@ -29,7 +29,7 @@ export function VisaoRegistro(p: {
   params: Record<string, string | undefined>;
   filtros?: React.ReactNode;
 }) {
-  const { d, ref, dias } = p;
+  const { d, dataRef: ref, dias } = p;
   const est = estatisticas({ ref, dias, eventos: d.todos, tarefas: d.tarefas, abertas: d.abertas });
   const cids = new Set<string>([
     ...d.noPeriodo.map((e) => clienteDoEvento(d, e)),
@@ -94,7 +94,7 @@ export function VisaoRegistro(p: {
         <PainelPeriodo
           est={est}
           dias={dias}
-          ref={ref}
+          dataRef={ref}
           cores={cores}
           nomes={d.nomes}
           tarefas={d.tarefas}

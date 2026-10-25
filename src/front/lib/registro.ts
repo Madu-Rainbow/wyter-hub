@@ -1,6 +1,7 @@
 import type { createSupabaseServer } from "@front/lib/supabase/server";
 import type { Secoes } from "./registro-texto";
 import { mascarar } from "./registro-texto";
+import { rotuloEvento } from "./rotulos-evento";
 import { ABERTAS, formatDataISO, hojeISO, statusLabels } from "./tarefas";
 
 export { mascarar };
@@ -11,6 +12,7 @@ export type Ev = {
   id: string;
   quando: string;
   verbo: string;
+  entidade?: string;
   quem_id: string;
   entidade_id: string;
   cliente_id: string | null;
@@ -37,7 +39,7 @@ export type TarefaInfo = {
 };
 
 export const EV_COLUNAS =
-  "id, quando, verbo, quem_id, entidade_id, cliente_id, projeto_id, antes, depois";
+  "id, quando, verbo, entidade, quem_id, entidade_id, cliente_id, projeto_id, antes, depois";
 const TAREFA_COLUNAS =
   "id, titulo, numero, status, data_prazo, responsavel_id, projeto_id, descricao, estimativa_horas, bloqueada_por_id, n_anexos, projeto:projeto_id(nome, chave, cliente_id)";
 
@@ -245,10 +247,6 @@ export function descreve(ev: Ev, pessoas: Map<string, string>) {
   const a = ev.antes ?? {};
   const d = ev.depois ?? {};
   switch (ev.verbo) {
-    case "concluiu":
-      return "concluiu";
-    case "reabriu":
-      return "reabriu";
     case "moveu":
       return `moveu de ${st(a.status)} para ${st(d.status)}`;
     case "reatribuiu":
@@ -257,14 +255,10 @@ export function descreve(ev: Ev, pessoas: Map<string, string>) {
       return `reagendou prazo de ${dt(a.data_prazo)} para ${dt(d.data_prazo)}`;
     case "repriorizou":
       return `alterou a prioridade de ${s(a.prioridade) ?? "?"} para ${s(d.prioridade) ?? "?"}`;
-    case "comentou":
-      return "comentou";
-    case "criou":
-      return "criou";
-    case "excluiu":
-      return "excluiu";
-    default:
-      return ev.verbo;
+    default: {
+      const r = rotuloEvento(ev.verbo, ev.entidade);
+      return r.charAt(0).toLowerCase() + r.slice(1);
+    }
   }
 }
 

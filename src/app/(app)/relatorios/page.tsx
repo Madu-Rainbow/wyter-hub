@@ -1,4 +1,5 @@
 import { VisaoRegistro } from "@front/components/registro/visao";
+import { Button } from "@front/components/ui/button";
 import { Combobox } from "@front/components/ui/combobox";
 import { ehGestor } from "@front/lib/papel";
 import { carregarPeriodo, clienteDoEvento, resolvePeriodo } from "@front/lib/registro";
@@ -58,7 +59,7 @@ export default async function RelatoriosPage({
       subtitulo={dias === 1 ? formatDataISO(ref) : `Últimos ${dias} dias até ${formatDataISO(ref)}`}
       aba={aba}
       periodo={p}
-      ref={ref}
+      dataRef={ref}
       dias={dias as 1 | 7 | 30}
       d={d}
       voz={gestor ? "equipe" : "eu"}
@@ -90,12 +91,9 @@ export default async function RelatoriosPage({
               className="w-48"
             />
           )}
-          <button
-            type="submit"
-            className="h-9 rounded-md border border-border bg-surface px-3 text-sm hover:bg-secondary"
-          >
+          <Button type="submit" variant="secondary">
             Filtrar
-          </button>
+          </Button>
         </form>
       }
     />

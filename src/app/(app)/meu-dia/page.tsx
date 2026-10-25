@@ -50,7 +50,7 @@ export default async function MeuDiaPage({
       subtitulo={dias === 1 ? formatDataISO(ref) : `Últimos ${dias} dias até ${formatDataISO(ref)}`}
       aba={sp.aba === "relatorio" ? "relatorio" : "painel"}
       periodo={p}
-      ref={ref}
+      dataRef={ref}
       dias={dias as 1 | 7 | 30}
       d={d}
       voz="eu"
