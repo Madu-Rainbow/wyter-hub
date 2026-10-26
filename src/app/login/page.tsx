@@ -101,34 +101,37 @@ function LoginShell({ children }: { children?: ReactNode }) {
           </p>
         </div>
         <div
-          className="relative mx-auto h-72 w-full max-w-2xl [perspective:900px]"
+          className="relative mx-auto h-80 w-full max-w-2xl [perspective:1000px]"
           aria-hidden="true"
         >
-          <div className="absolute inset-8 rotate-x-[58deg] rotate-z-[-18deg] border border-white/15 [transform-style:preserve-3d]">
-            {Array.from({ length: 12 }, (_, i) => `node-${i}`).map((key, i) => (
+          <div className="absolute inset-0 [transform:rotateX(58deg)_rotateZ(-18deg)_rotateY(-8deg)] [transform-style:preserve-3d]">
+            <div className="absolute inset-8 rounded-[50%] border border-[#8fb8e8]/20 bg-[#05080e]/70 shadow-[0_0_80px_#263c68] [transform:translateZ(-35px)]" />
+            <div className="absolute inset-12 rounded-[50%] border border-white/10 [transform:translateZ(-10px)]" />
+            {Array.from({ length: 10 }, (_, i) => `edge-${i}`).map((key, i) => (
               <span
                 key={key}
-                className="absolute size-2 rounded-full bg-[#8fb8e8] shadow-[0_0_18px_#8fb8e8]"
+                className="absolute h-px origin-left bg-gradient-to-r from-[#8fb8e8]/70 via-[#9f8cff]/40 to-transparent shadow-[0_0_8px_#8fb8e8]"
                 style={{
-                  left: `${12 + ((i * 29) % 76)}%`,
-                  top: `${10 + ((i * 47) % 72)}%`,
-                  transform: `translateZ(${(i % 4) * 24}px)`,
+                  left: `${18 + ((i * 19) % 49)}%`,
+                  top: `${24 + ((i * 31) % 45)}%`,
+                  width: `${22 + (i % 4) * 8}%`,
+                  transform: `rotate(${12 + i * 23}deg) translateZ(${(i % 5) * 22}px)`,
                 }}
               />
             ))}
-            {Array.from({ length: 7 }, (_, i) => `line-${i}`).map((key, i) => (
+            {Array.from({ length: 14 }, (_, i) => `node-${i}`).map((key, i) => (
               <span
                 key={key}
-                className="absolute h-px origin-left bg-white/25"
+                className="absolute size-3 rounded-full border border-[#d6e8ff]/80 bg-[radial-gradient(circle_at_35%_30%,#fff_0,#b8d7ff_16%,#738dff_42%,#6b4bce_70%,transparent_72%)] shadow-[0_0_7px_#d6e8ff,0_0_24px_#7661ff]"
                 style={{
-                  left: `${12 + ((i * 23) % 52)}%`,
-                  top: `${18 + ((i * 31) % 54)}%`,
-                  width: `${18 + (i % 3) * 9}%`,
-                  transform: `rotate(${18 + i * 19}deg) translateZ(${(i % 3) * 18}px)`,
+                  left: `${11 + ((i * 29) % 78)}%`,
+                  top: `${12 + ((i * 43) % 70)}%`,
+                  transform: `translateZ(${18 + (i % 6) * 20}px) scale(${0.7 + (i % 4) * 0.18})`,
                 }}
               />
             ))}
           </div>
+          <div className="absolute inset-x-20 bottom-4 h-10 rounded-[50%] bg-[#596cff]/10 blur-2xl" />
         </div>
         <p className="relative z-10 text-xs text-white/45">
           Visualização demonstrativa · dados fictícios
