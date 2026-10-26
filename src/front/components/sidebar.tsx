@@ -6,10 +6,12 @@ import { TooltipProvider } from "@front/components/ui/tooltip";
 import {
   Building2,
   CalendarCheck,
+  Files,
   FolderKanban,
   LayoutDashboard,
   LogOut,
   Network,
+  PackageOpen,
   PanelLeftClose,
   PanelLeftOpen,
   UserCog,
@@ -26,8 +28,10 @@ const navItems: NavItem[] = [
   { href: "/meu-dia", label: "Meu dia", icon: <CalendarCheck className="size-4 shrink-0" /> },
   { href: "/trabalho", label: "Trabalho", icon: <FolderKanban className="size-4 shrink-0" /> },
   { href: "/clientes", label: "Clientes", icon: <Building2 className="size-4 shrink-0" /> },
+  { href: "/arquivos", label: "Arquivos", icon: <Files className="size-4 shrink-0" /> },
   { href: "/equipe", label: "Equipe", icon: <Users className="size-4 shrink-0" /> },
   { href: "/dataware", label: "DataWare", icon: <Network className="size-4 shrink-0" /> },
+  { href: "/repositorio", label: "Repositório", icon: <PackageOpen className="size-4 shrink-0" /> },
 ];
 
 const adminItems: NavItem[] = [
