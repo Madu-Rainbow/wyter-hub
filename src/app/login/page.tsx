@@ -100,42 +100,7 @@ function LoginShell({ children }: { children?: ReactNode }) {
             Conectamos contexto, trabalho e resultado em uma visão única para a equipe.
           </p>
         </div>
-        <div
-          className="relative mx-auto h-80 w-full max-w-2xl [perspective:1000px]"
-          aria-hidden="true"
-        >
-          <div className="absolute inset-0 [transform:rotateX(58deg)_rotateZ(-18deg)_rotateY(-8deg)] [transform-style:preserve-3d]">
-            <div className="absolute inset-8 rounded-[50%] border border-[#8fb8e8]/20 bg-[#05080e]/70 shadow-[0_0_80px_#263c68] [transform:translateZ(-35px)]" />
-            <div className="absolute inset-12 rounded-[50%] border border-white/10 [transform:translateZ(-10px)]" />
-            {Array.from({ length: 10 }, (_, i) => `edge-${i}`).map((key, i) => (
-              <span
-                key={key}
-                className="absolute h-px origin-left bg-gradient-to-r from-[#8fb8e8]/70 via-[#9f8cff]/40 to-transparent shadow-[0_0_8px_#8fb8e8]"
-                style={{
-                  left: `${18 + ((i * 19) % 49)}%`,
-                  top: `${24 + ((i * 31) % 45)}%`,
-                  width: `${22 + (i % 4) * 8}%`,
-                  transform: `rotate(${12 + i * 23}deg) translateZ(${(i % 5) * 22}px)`,
-                }}
-              />
-            ))}
-            {Array.from({ length: 14 }, (_, i) => `node-${i}`).map((key, i) => (
-              <span
-                key={key}
-                className="absolute size-3 rounded-full border border-[#d6e8ff]/80 bg-[radial-gradient(circle_at_35%_30%,#fff_0,#b8d7ff_16%,#738dff_42%,#6b4bce_70%,transparent_72%)] shadow-[0_0_7px_#d6e8ff,0_0_24px_#7661ff]"
-                style={{
-                  left: `${11 + ((i * 29) % 78)}%`,
-                  top: `${12 + ((i * 43) % 70)}%`,
-                  transform: `translateZ(${18 + (i % 6) * 20}px) scale(${0.7 + (i % 4) * 0.18})`,
-                }}
-              />
-            ))}
-          </div>
-          <div className="absolute inset-x-20 bottom-4 h-10 rounded-[50%] bg-[#596cff]/10 blur-2xl" />
-        </div>
-        <p className="relative z-10 text-xs text-white/45">
-          Visualização demonstrativa · dados fictícios
-        </p>
+        <p className="relative z-10 text-xs text-white/45">Ambiente interno · acesso restrito</p>
       </section>
       <section className="flex min-h-screen items-center justify-center px-6 py-10 lg:px-10">
         <div className="w-full max-w-sm rounded-md border border-border bg-surface p-8">
