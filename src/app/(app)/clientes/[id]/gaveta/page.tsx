@@ -2,11 +2,61 @@ import { UploadArquivo } from "@front/components/gaveta/upload-arquivo";
 import { Button } from "@front/components/ui/button";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { ArrowLeft, FolderOpen } from "lucide-react";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-export default async function GavetaClientePage({ params }: { params: Promise<{ id: string }> }) {
+async function criarPasta(clienteId: string, formData: FormData) {
+  "use server";
+  const sb = await createSupabaseServer();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: pessoa } = await sb
+    .from("pessoa")
+    .select("id, org_id, papel")
+    .eq("auth_user_id", user.id)
+    .single();
+  if (!pessoa || !["diretor", "consultor"].includes(pessoa.papel)) {
+    throw new Error("Você não pode criar pastas neste cliente.");
+  }
+  const nome = String(formData.get("nome") ?? "").trim();
+  const paiId = String(formData.get("pai_id") ?? "").trim() || null;
+  if (!nome) throw new Error("Informe o nome da pasta.");
+  const { error } = await sb.from("gaveta_pasta").insert({
+    org_id: pessoa.org_id,
+    cliente_id: clienteId,
+    pai_id: paiId,
+    nome,
+    criado_por: pessoa.id,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/clientes/${clienteId}/gaveta`);
+}
+
+async function baixarArquivo(clienteId: string, storagePath: string) {
+  "use server";
+  const sb = await createSupabaseServer();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  if (!user) redirect("/login");
+  const { data, error } = await sb.storage.from("gaveta").createSignedUrl(storagePath, 300);
+  if (error || !data?.signedUrl)
+    throw new Error(error?.message ?? "Não foi possível gerar o download.");
+  redirect(data.signedUrl);
+}
+
+export default async function GavetaClientePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ pasta?: string }>;
+}) {
   const { id } = await params;
+  const { pasta: pastaSelecionada } = await searchParams;
   const sb = await createSupabaseServer();
   const {
     data: { user },
@@ -30,6 +80,22 @@ export default async function GavetaClientePage({ params }: { params: Promise<{ 
     .is("deleted_at", null)
     .order("nome");
   const raiz = pastas?.find((p) => !p.pai_id);
+  const pastaAtual = pastas?.find((p) => p.id === pastaSelecionada) ?? raiz;
+  const [arquivos, subpastas] = pastaAtual
+    ? await Promise.all([
+        sb
+          .from("gaveta_arquivo")
+          .select("id, nome, tipo_mime, tamanho, storage_path, versao_atual")
+          .eq("cliente_id", id)
+          .eq("pasta_id", pastaAtual.id)
+          .is("deleted_at", null)
+          .order("nome"),
+        Promise.resolve({
+          data: pastas?.filter((p) => p.pai_id === pastaAtual.id) ?? [],
+        }),
+      ])
+    : [{ data: [] }, { data: [] }];
+  const criarPastaCliente = criarPasta.bind(null, id);
 
   return (
     <div className="space-y-6">
@@ -49,35 +115,71 @@ export default async function GavetaClientePage({ params }: { params: Promise<{ 
             <FolderOpen className="size-5 text-text-muted" aria-hidden />
             <h2 className="font-title text-lg text-text">Pastas do cliente</h2>
           </div>
-          {pessoa && raiz && ["diretor", "consultor"].includes(pessoa.papel) && (
+          {pessoa && pastaAtual && ["diretor", "consultor"].includes(pessoa.papel) && (
             <UploadArquivo
               orgId={pessoa.org_id}
               clienteId={id}
               pessoaId={pessoa.id}
-              pastaId={raiz.id}
+              pastaId={pastaAtual.id}
             />
           )}
+          {pessoa && pastaAtual && ["diretor", "consultor"].includes(pessoa.papel) && (
+            <form action={criarPastaCliente} className="flex items-center gap-2">
+              <input name="pai_id" type="hidden" value={pastaAtual.id} />
+              <input
+                name="nome"
+                required
+                placeholder="Nova subpasta"
+                className="h-8 w-40 rounded border border-border bg-background px-2 text-xs"
+              />
+              <Button type="submit" size="sm" variant="outline">
+                Criar pasta
+              </Button>
+            </form>
+          )}
+        </div>
+        <div className="mb-4 flex flex-wrap gap-2 border-b border-border pb-4">
+          {pastas?.map((pasta) => (
+            <Button
+              key={pasta.id}
+              variant={pasta.id === pastaAtual?.id ? "secondary" : "ghost"}
+              size="sm"
+              asChild
+            >
+              <Link href={`/clientes/${id}/gaveta?pasta=${pasta.id}`}>
+                <FolderOpen className="size-3.5" />
+                {pasta.nome}
+              </Link>
+            </Button>
+          ))}
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {pastas?.map((pasta) => (
-            <div key={pasta.id} className="rounded-md border border-border p-3">
+          {subpastas.data?.map((pasta) => (
+            <Link
+              key={pasta.id}
+              href={`/clientes/${id}/gaveta?pasta=${pasta.id}`}
+              className="rounded-md border border-border p-3 transition-colors hover:border-accent/40"
+            >
+              <FolderOpen className="mb-2 size-5 text-text-muted" aria-hidden />
               <p className="truncate text-sm font-medium text-text">{pasta.nome}</p>
+            </Link>
+          ))}
+          {arquivos.data?.map((arquivo) => (
+            <div key={arquivo.id} className="rounded-md border border-border p-3">
+              <p className="truncate text-sm font-medium text-text">{arquivo.nome}</p>
               <p className="mt-1 text-xs text-text-muted">
-                {pasta.projeto_id ? "Projeto" : pasta.contrato_id ? "Contrato" : "Cliente"}
+                {arquivo.tipo_mime} · {(arquivo.tamanho / 1024).toFixed(0)} KB
               </p>
-              {pessoa && ["diretor", "consultor"].includes(pessoa.papel) && (
-                <div className="mt-3">
-                  <UploadArquivo
-                    orgId={pessoa.org_id}
-                    clienteId={id}
-                    pessoaId={pessoa.id}
-                    pastaId={pasta.id}
-                  />
-                </div>
-              )}
+              <form action={baixarArquivo.bind(null, id, arquivo.storage_path)} className="mt-3">
+                <Button type="submit" size="sm" variant="outline">
+                  Baixar
+                </Button>
+              </form>
             </div>
           ))}
-          {!pastas?.length && <p className="text-sm text-text-muted">Nenhuma pasta criada.</p>}
+          {!subpastas.data?.length && !arquivos.data?.length && (
+            <p className="text-sm text-text-muted">Esta pasta está vazia.</p>
+          )}
         </div>
       </section>
     </div>
