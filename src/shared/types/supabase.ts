@@ -1200,6 +1200,7 @@ export type Database = {
       gaveta_pasta: {
         Row: {
           cliente_id: string
+          contrato_id: string | null
           created_at: string
           criado_por: string
           deleted_at: string | null
@@ -1207,10 +1208,12 @@ export type Database = {
           nome: string
           org_id: string
           pai_id: string | null
+          projeto_id: string | null
           updated_at: string
         }
         Insert: {
           cliente_id: string
+          contrato_id?: string | null
           created_at?: string
           criado_por: string
           deleted_at?: string | null
@@ -1218,10 +1221,12 @@ export type Database = {
           nome: string
           org_id: string
           pai_id?: string | null
+          projeto_id?: string | null
           updated_at?: string
         }
         Update: {
           cliente_id?: string
+          contrato_id?: string | null
           created_at?: string
           criado_por?: string
           deleted_at?: string | null
@@ -1229,6 +1234,7 @@ export type Database = {
           nome?: string
           org_id?: string
           pai_id?: string | null
+          projeto_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1238,6 +1244,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "cliente"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gaveta_pasta_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gaveta_pasta_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contrato_andamento"
+            referencedColumns: ["contrato_id"]
+          },
+          {
+            foreignKeyName: "gaveta_pasta_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contrato_financeiro"
+            referencedColumns: ["contrato_id"]
           },
           {
             foreignKeyName: "gaveta_pasta_criado_por_fkey"
@@ -1258,6 +1285,13 @@ export type Database = {
             columns: ["pai_id"]
             isOneToOne: false
             referencedRelation: "gaveta_pasta"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gaveta_pasta_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projeto"
             referencedColumns: ["id"]
           },
         ]
@@ -2301,6 +2335,26 @@ export type Database = {
           destino: string | null
           origem: string | null
           relacao: string | null
+        }
+        Relationships: []
+      }
+      dw_gaveta_aresta: {
+        Row: {
+          destino: string | null
+          origem: string | null
+          relacao: string | null
+        }
+        Relationships: []
+      }
+      dw_gaveta_no: {
+        Row: {
+          atributos: Json | null
+          cliente_id: string | null
+          id: string | null
+          org_id: string | null
+          rotulo: string | null
+          status: string | null
+          tipo: string | null
         }
         Relationships: []
       }

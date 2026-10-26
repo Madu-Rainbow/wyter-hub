@@ -11,14 +11,25 @@ export default async function ArquivosPage() {
   } = await sb.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: arquivos } = await sb
-    .from("gaveta_arquivo")
-    .select(
-      "id, cliente_id, nome, tipo_mime, tamanho, updated_at, cliente:cliente_id(nome_fantasia, razao_social)",
-    )
-    .is("deleted_at", null)
-    .order("updated_at", { ascending: false })
-    .limit(100);
+  const [{ data: pastas }, { data: arquivos }] = await Promise.all([
+    sb
+      .from("gaveta_pasta")
+      .select(
+        "id, cliente_id, nome, contrato_id, projeto_id, cliente:cliente_id(nome_fantasia, razao_social)",
+      )
+      .is("deleted_at", null)
+      .is("pai_id", null)
+      .order("nome")
+      .limit(100),
+    sb
+      .from("gaveta_arquivo")
+      .select(
+        "id, cliente_id, nome, tipo_mime, tamanho, updated_at, cliente:cliente_id(nome_fantasia, razao_social)",
+      )
+      .is("deleted_at", null)
+      .order("updated_at", { ascending: false })
+      .limit(100),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -30,6 +41,34 @@ export default async function ArquivosPage() {
           </p>
         </div>
       </div>
+
+      <section className="rounded-md border border-border bg-surface">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <FolderOpen className="size-4 text-text-muted" aria-hidden />
+          <h2 className="font-title text-lg text-text">Pastas por cliente</h2>
+        </div>
+        <div className="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          {pastas?.map((pasta) => {
+            const cliente = pasta.cliente as unknown as {
+              nome_fantasia: string | null;
+              razao_social: string;
+            } | null;
+            return (
+              <Link
+                key={pasta.id}
+                href={`/clientes/${pasta.cliente_id}/gaveta`}
+                className="rounded-md border border-border p-3 transition-colors hover:border-accent/40"
+              >
+                <p className="truncate text-sm font-medium text-text">{pasta.nome}</p>
+                <p className="mt-1 text-xs text-text-muted">
+                  {cliente?.nome_fantasia || cliente?.razao_social || "Cliente"}
+                </p>
+              </Link>
+            );
+          })}
+          {!pastas?.length && <p className="text-sm text-text-muted">Nenhuma pasta encontrada.</p>}
+        </div>
+      </section>
 
       <section className="rounded-md border border-border bg-surface">
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">

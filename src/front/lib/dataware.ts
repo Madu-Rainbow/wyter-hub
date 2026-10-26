@@ -9,7 +9,9 @@ export type TipoNo =
   | "dossie"
   | "aditivo"
   | "escopo"
-  | "aprovacao";
+  | "aprovacao"
+  | "pasta"
+  | "arquivo";
 
 export type DwNo = {
   id: string;
@@ -35,6 +37,8 @@ export const TIPOS: { tipo: TipoNo; label: string; cor: string }[] = [
   { tipo: "aditivo", label: "Aditivo", cor: "#5f7a9c" },
   { tipo: "escopo", label: "Escopo", cor: "#7a9c5f" },
   { tipo: "aprovacao", label: "Aprovação", cor: "#c4527a" },
+  { tipo: "pasta", label: "Pasta", cor: "#b8863b" },
+  { tipo: "arquivo", label: "Arquivo", cor: "#6d7888" },
 ];
 export const COR: Record<string, string> = Object.fromEntries(TIPOS.map((t) => [t.tipo, t.cor]));
 export const TIPO_LABEL: Record<string, string> = Object.fromEntries(
@@ -42,7 +46,7 @@ export const TIPO_LABEL: Record<string, string> = Object.fromEntries(
 );
 
 /** Unico ponto que mapeia nó -> rota da tela do registro (rotas podem migrar para /trabalho). */
-export function rotaDoNo(n: Pick<DwNo, "id" | "tipo" | "atributos">): string | null {
+export function rotaDoNo(n: Pick<DwNo, "id" | "tipo" | "atributos" | "cliente_id">): string | null {
   switch (n.tipo) {
     case "cliente":
       return `/clientes/${n.id}`;
@@ -55,6 +59,9 @@ export function rotaDoNo(n: Pick<DwNo, "id" | "tipo" | "atributos">): string | n
       return typeof n.atributos.chave === "string" ? `/tarefas/${n.atributos.chave}` : null;
     case "pessoa":
       return `/equipe/${n.id}`;
+    case "pasta":
+    case "arquivo":
+      return n.cliente_id ? `/clientes/${n.cliente_id}/gaveta` : null;
     default:
       return null;
   }

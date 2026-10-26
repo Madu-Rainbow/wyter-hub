@@ -13,7 +13,7 @@ export default async function DatawarePage() {
   if (!user) redirect("/login");
 
   // Carga inicial (FR-008-11): Clientes > Contratos > Projetos (+ Pessoas); o resto vem ao expandir.
-  const [n, a, r] = await Promise.all([
+  const [n, a, r, gn, ga] = await Promise.all([
     sb
       .from("dw_no")
       .select("*")
@@ -25,9 +25,11 @@ export default async function DatawarePage() {
       .in("relacao", ["contrato", "projeto", "subprojeto"])
       .limit(1000),
     sb.from("dw_aresta").select("*").eq("relacao", "responsavel").limit(1000),
+    sb.from("dw_gaveta_no").select("*").limit(1000),
+    sb.from("dw_gaveta_aresta").select("*").limit(2000),
   ]);
-  const nos = (n.data ?? []).map(paraNo);
-  const arestas = [...(a.data ?? []), ...(r.data ?? [])] as DwAresta[];
+  const nos = [...(n.data ?? []), ...(gn.data ?? [])].map(paraNo);
+  const arestas = [...(a.data ?? []), ...(r.data ?? []), ...(ga.data ?? [])] as DwAresta[];
 
   return (
     <div className="flex h-[calc(100dvh-5rem)] min-h-0 min-w-0 flex-col overflow-hidden sm:h-[calc(100dvh-5.5rem)] lg:h-[calc(100dvh-3rem)]">
