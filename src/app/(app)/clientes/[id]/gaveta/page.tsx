@@ -35,7 +35,7 @@ async function criarPasta(clienteId: string, formData: FormData) {
   revalidatePath(`/clientes/${clienteId}/gaveta`);
 }
 
-async function baixarArquivo(clienteId: string, storagePath: string) {
+async function baixarArquivo(_clienteId: string, storagePath: string) {
   "use server";
   const sb = await createSupabaseServer();
   const {
@@ -95,6 +95,12 @@ export default async function GavetaClientePage({
         }),
       ])
     : [{ data: [] }, { data: [] }];
+  const arquivosComUrl = await Promise.all(
+    (arquivos.data ?? []).map(async (arquivo) => {
+      const { data } = await sb.storage.from("gaveta").createSignedUrl(arquivo.storage_path, 300);
+      return { ...arquivo, signedUrl: data?.signedUrl ?? null };
+    }),
+  );
   const criarPastaCliente = criarPasta.bind(null, id);
 
   return (
@@ -164,20 +170,32 @@ export default async function GavetaClientePage({
               <p className="truncate text-sm font-medium text-text">{pasta.nome}</p>
             </Link>
           ))}
-          {arquivos.data?.map((arquivo) => (
+          {arquivosComUrl.map((arquivo) => (
             <div key={arquivo.id} className="rounded-md border border-border p-3">
               <p className="truncate text-sm font-medium text-text">{arquivo.nome}</p>
               <p className="mt-1 text-xs text-text-muted">
                 {arquivo.tipo_mime} · {(arquivo.tamanho / 1024).toFixed(0)} KB
               </p>
-              <form action={baixarArquivo.bind(null, id, arquivo.storage_path)} className="mt-3">
-                <Button type="submit" size="sm" variant="outline">
-                  Baixar
-                </Button>
-              </form>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {arquivo.signedUrl &&
+                  ["application/pdf", "image/png", "image/jpeg", "image/webp"].includes(
+                    arquivo.tipo_mime,
+                  ) && (
+                    <Button size="sm" variant="ghost" asChild>
+                      <a href={arquivo.signedUrl} target="_blank" rel="noreferrer">
+                        Visualizar
+                      </a>
+                    </Button>
+                  )}
+                <form action={baixarArquivo.bind(null, id, arquivo.storage_path)}>
+                  <Button type="submit" size="sm" variant="outline">
+                    Baixar
+                  </Button>
+                </form>
+              </div>
             </div>
           ))}
-          {!subpastas.data?.length && !arquivos.data?.length && (
+          {!subpastas.data?.length && !arquivosComUrl.length && (
             <p className="text-sm text-text-muted">Esta pasta está vazia.</p>
           )}
         </div>

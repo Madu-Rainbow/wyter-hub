@@ -34,15 +34,14 @@ export function UploadArquivo({
   const [busy, setBusy] = useState(false);
   const [mensagem, setMensagem] = useState("");
 
-  async function enviar(file: File) {
-    setMensagem("");
+  async function enviar(file: File): Promise<boolean> {
     if (file.size === 0 || file.size > LIMITE) {
-      setMensagem("O arquivo deve ter entre 1 byte e 25 MB.");
-      return;
+      setMensagem(`"${file.name}" deve ter entre 1 byte e 25 MB.`);
+      return false;
     }
     if (!TIPOS.has(file.type)) {
-      setMensagem("Tipo de arquivo não permitido.");
-      return;
+      setMensagem(`"${file.name}" tem um tipo de arquivo não permitido.`);
+      return false;
     }
     setBusy(true);
     const sb = createClient();
@@ -56,7 +55,7 @@ export function UploadArquivo({
     if (upload.error) {
       setBusy(false);
       setMensagem(upload.error.message);
-      return;
+      return false;
     }
     const { error } = await sb.from("gaveta_arquivo").insert({
       id: arquivoId,
@@ -72,11 +71,39 @@ export function UploadArquivo({
     if (error) {
       await sb.storage.from("gaveta").remove([path]);
       setMensagem(error.message);
+      setBusy(false);
+      return false;
+    }
+    const { error: versaoError } = await sb.from("gaveta_versao").insert({
+      arquivo_id: arquivoId,
+      numero: 1,
+      storage_path: path,
+      tamanho: file.size,
+      criado_por: pessoaId,
+    });
+    if (versaoError) {
+      await sb.from("gaveta_arquivo").delete().eq("id", arquivoId);
+      await sb.storage.from("gaveta").remove([path]);
+      setMensagem(versaoError.message);
+      setBusy(false);
+      return false;
     } else {
-      setMensagem("Arquivo enviado.");
-      window.location.reload();
+      return true;
+    }
+  }
+
+  async function enviarArquivos(files: FileList) {
+    setMensagem("");
+    setBusy(true);
+    let enviados = 0;
+    for (const file of Array.from(files)) {
+      if (await enviar(file)) enviados++;
     }
     setBusy(false);
+    if (enviados > 0) {
+      setMensagem(`${enviados} arquivo(s) enviado(s).`);
+      window.location.reload();
+    }
   }
 
   return (
@@ -85,9 +112,9 @@ export function UploadArquivo({
         ref={inputRef}
         type="file"
         className="sr-only"
+        multiple
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) void enviar(file);
+          if (event.target.files?.length) void enviarArquivos(event.target.files);
           event.target.value = "";
         }}
       />
