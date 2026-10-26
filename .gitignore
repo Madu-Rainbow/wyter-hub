@@ -9,6 +9,7 @@ out/
 # Build
 dist/
 build/
+hostinger/
 
 # Environment
 .env
