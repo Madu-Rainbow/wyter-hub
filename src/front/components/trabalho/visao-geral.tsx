@@ -7,6 +7,7 @@ import {
 } from "@front/components/contratos/situacao";
 import { type Arvore, SEM_CONTRATO } from "@front/lib/arvore";
 import { impactoAditivos } from "@front/lib/financeiro";
+import { rotuloEvento } from "@front/lib/rotulos-evento";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { lerTodas, statusLabels } from "@front/lib/tarefas";
 import { type Nivel, trabalhoHref } from "@front/lib/trabalho";
@@ -62,7 +63,8 @@ async function Atividades({ clienteId }: { clienteId: string }) {
       {data.map((e) => (
         <li key={e.id} className="flex justify-between gap-3 px-4 py-2">
           <span className="text-text">
-            {(e.quem as unknown as { nome: string } | null)?.nome ?? "—"} {e.verbo} {e.entidade}
+            {(e.quem as unknown as { nome: string } | null)?.nome ?? "—"}{" "}
+            {rotuloEvento(e.verbo, e.entidade)}
           </span>
           <span className="shrink-0 tabular-nums text-text-muted">{fmtISO(e.quando)}</span>
         </li>

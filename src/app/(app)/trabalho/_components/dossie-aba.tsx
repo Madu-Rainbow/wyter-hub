@@ -2,6 +2,7 @@ import { ContatoForm } from "@front/components/clientes/contato-form";
 import { DossieSheet } from "@front/components/clientes/dossie-sheet";
 import { SensiveisSecao } from "@front/components/clientes/sensiveis-secao";
 import { fmtISO } from "@front/components/trabalho/tipos";
+import { rotuloEvento } from "@front/lib/rotulos-evento";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { adicionarContato, adicionarDossie } from "../../clientes/[id]/actions";
 
@@ -82,7 +83,8 @@ export async function DossieAba({ clienteId, papel }: { clienteId: string; papel
           {eventos?.map((e) => (
             <li key={e.id} className="flex justify-between gap-3 px-3 py-2">
               <span className="text-text">
-                {(e.quem as unknown as { nome: string } | null)?.nome ?? "—"} {e.verbo} {e.entidade}
+                {(e.quem as unknown as { nome: string } | null)?.nome ?? "—"}{" "}
+                {rotuloEvento(e.verbo, e.entidade)}
               </span>
               <span className="shrink-0 tabular-nums text-text-muted">{fmtISO(e.quando)}</span>
             </li>
