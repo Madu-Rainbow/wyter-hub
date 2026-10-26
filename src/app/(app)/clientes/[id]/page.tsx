@@ -6,7 +6,7 @@ import { financeiroContratos } from "@front/lib/financeiro";
 import { ehGestor } from "@front/lib/papel";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import { ABERTAS, formatDataISO, statusLabels } from "@front/lib/tarefas";
-import { ArrowLeft, Pencil, Plus } from "lucide-react";
+import { ArrowLeft, FolderOpen, Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { adicionarContato, adicionarDossie } from "./actions";
@@ -126,6 +126,12 @@ export default async function ClienteDetalhePage({ params }: { params: Promise<{
               <Link href={`/clientes/${id}/editar`}>
                 <Pencil className="size-3.5" />
                 Editar
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5" asChild>
+              <Link href={`/clientes/${id}/gaveta`}>
+                <FolderOpen className="size-3.5" />
+                Arquivos
               </Link>
             </Button>
             <StatusBadge status={cliente.status} />
