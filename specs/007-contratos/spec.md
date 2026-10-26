@@ -1,5 +1,27 @@
 # Spec 007 — Contratos
 
+## Estado atual — 2026-10-26
+
+**Status geral:** PARCIAL — vínculo e situação derivada estão implementados; a experiência final depende da área unificada e da validação financeira.
+
+### FEITO
+
+- Vínculo opcional Projeto → Contrato.
+- Situação derivada `Sem projeto`, `Em andamento`, `Entregue` e `Encerrado`.
+- View de andamento reutilizada pelo painel.
+- Tela de contratos integrada à área `/trabalho`, com lista, detalhe, projetos, aditivos e escopos.
+- Proteção de valores financeiros e remoção desses valores dos eventos.
+
+### EM VALIDAÇÃO
+
+- Exibição dos valores para diretor/consultor com dados remotos reais.
+- Teste de RLS e de escrita por papel.
+
+### FALTA
+
+- Decidir e documentar se consultor terá escrita completa ou apenas ações visíveis conforme permissão.
+- Completar testes E2E de situação derivada, aditivos, escopos e valores.
+
 ## Requisitos adicionados
 
 - **FR-007-01**: Projeto DEVE poder ser vinculado a um contrato (`projeto.contrato_id`, nullable, FK para `contrato`). Requer migration nova: hoje não existe vínculo.

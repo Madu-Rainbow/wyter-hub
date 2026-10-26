@@ -4,9 +4,32 @@
 
 **Created**: 2026-10-23
 
-**Status**: Draft
+**Status**: PARCIAL — base implementada; validações e pendências listadas abaixo.
 
 **Input**: Modelo de dados completo do Wyter Hub, autenticação por e-mail e senha (Supabase Auth), sistema de papéis e permissões (diretor/consultor/analista/convidado), log de eventos append-only, dossiê do cliente.
+
+## Estado atual — 2026-10-26
+
+### FEITO
+
+- Login por e-mail e senha, sessão protegida, e-mail preservado após erro e bloqueio de cadastro público no fluxo da aplicação.
+- Papéis, organização, RLS por `org_id`, usuários autorizados e telas de equipe/admin.
+- CRUD principal de clientes, projetos, contratos, contatos e dossiê.
+- Eventos append-only, auditoria de dados sensíveis e proteção de valores financeiros.
+- Hierarquia Cliente → Contrato → Projeto → Tarefa e fluxo de aprovações.
+- Dados demonstrativos para usuários ativos e atualização em tempo real via Supabase Realtime.
+
+### EM VALIDAÇÃO
+
+- Teste completo de RLS com contas separadas de diretor, consultor, analista e convidado.
+- Teste ponta a ponta de revelar/gravar dados sensíveis e tentativa de alterar ou excluir eventos.
+- Conferência das configurações de Auth no painel remoto.
+
+### FALTA
+
+- Concluir a decisão e implementação de permissões de cliente para analistas/convidados.
+- Fechar pendências de segurança operacional: troca de credenciais de desenvolvimento e revisão dos convites existentes.
+- Regenerar e revisar os tipos gerados do Supabase após todas as migrations remotas.
 
 ## User Scenarios & Testing
 
@@ -23,6 +46,9 @@ Um membro da Wyter acessa o sistema pela primeira vez. Informa o e-mail e a senh
 1. **Given** um e-mail autorizado da Wyter, **When** o usuário faz login com e-mail e senha, **Then** é autenticado e redirecionado para /minhas-tarefas com seu papel correto.
 2. **Given** um e-mail NÃO autorizado, **When** tenta fazer login, **Then** recebe mensagem "Acesso restrito a membros da Wyter" e não é criada sessão.
 3. **Given** um usuário já autenticado, **When** acessa qualquer rota, **Then** o middleware verifica a sessão e permite acesso conforme o papel.
+4. **Given** um visitante não autenticado, **When** acessa `/login`, **Then** vê o formulário de autenticação em um painel lateral direito e, à esquerda, uma apresentação institucional da Wyter com avisos, imagens ou outros destaques editoriais.
+5. **Given** a apresentação institucional do login, **When** é carregada em um dispositivo compatível, **Then** exibe uma visualização 3D demonstrativa de grafos fictícios, sem representar dados reais de clientes, pessoas ou tarefas.
+6. **Given** uma janela estreita ou dispositivo com suporte reduzido a recursos gráficos, **When** o login é carregado, **Then** o formulário continua utilizável e a apresentação 3D é reduzida ou substituída por uma alternativa estática sem bloquear a autenticação.
 
 ---
 
@@ -114,6 +140,11 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 - **FR-011**: Sistema DEVE preparar multi-tenant por org_id sem implementar a troca de organização na MVP.
 - **FR-012**: Sistema DEVE criptografar campos sensíveis de clientes de clientes (CPF, endereço, dados processuais) no banco.
 - **FR-013**: Sistema DEVE registrar trilha de auditoria para acesso a dados sensíveis.
+- **FR-020**: A tela de login DEVE apresentar o formulário de autenticação em um painel lateral direito, preservando a leitura e o envio do formulário em desktop, tablet e celular.
+- **FR-021**: A área esquerda da tela de login DEVE comunicar que a Wyter é orientada a dados, podendo exibir avisos, fotografias, chamadas institucionais e outros conteúdos editoriais sem expor dados reais do sistema.
+- **FR-022**: A área institucional DEVE incluir uma visualização 3D de grafos fictícios como elemento demonstrativo da orientação a dados; os nós, rótulos e relações devem ser explicitamente sintéticos e não podem ser derivados de registros reais.
+- **FR-023**: A apresentação institucional DEVE ter fallback estático quando a largura disponível, a preferência de movimento reduzido ou a capacidade gráfica do dispositivo tornar a visualização 3D inadequada, sem impedir o login.
+- **FR-024**: O conteúdo institucional e a visualização demonstrativa NÃO DEVEM alterar a autenticação, criar sessão, fazer chamadas autenticadas ou registrar eventos de negócio.
 
 ### Key Entities
 
@@ -155,12 +186,17 @@ O consultor acessa o dossiê de um cliente e vê fatos, decisões, restrições,
 - **SC-005**: Schema de todas as entidades validado por Zod e compartilhado entre API, UI e MCP.
 - **SC-006**: Seed com 3 clientes, 5 pessoas, 8 projetos, ~150 tarefas roda em menos de 10 segundos.
 - **SC-007**: Nenhum campo sensível visível em texto claro no banco de dados.
+- **SC-008**: Em uma tela de 390px de largura, o formulário de login continua completo e utilizável sem rolagem horizontal.
+- **SC-009**: Em dispositivo compatível, a área institucional exibe a visualização 3D sem gerar chamadas autenticadas nem alterar os dados exibidos após recarregar a página.
+- **SC-010**: Usuários com preferência de movimento reduzido ou sem suporte gráfico recebem a alternativa estática em até 1 segundo e conseguem iniciar o login normalmente.
 
 ## Assumptions
 
 - E-mail e senha é o único método de autenticação (sem OAuth, sem magic link, sem cadastro público).
 - A lista de e-mails autorizados é gerenciada por um diretor na tela de configuração (tabela no banco).
 - Na MVP, existe apenas uma organização (Wyter). O org_id está presente em todas as tabelas mas não há tela de troca.
+- A primeira versão da apresentação institucional usa conteúdo estático versionado com o produto; publicação e agendamento de avisos, fotos e campanhas ficam fora desta alteração.
+- Os grafos 3D do login são cenográficos e gerados localmente, sem conexão com o DataWare nem com dados de produção.
 - Desenvolvimento local com Postgres nativo; produção em Supabase. Código compatível com ambos.
 - Criptografia de campos sensíveis por coluna na aplicação (chave em .env), portável para Supabase.
 - Sem custo/hora por pessoa na MVP (removido do modelo).

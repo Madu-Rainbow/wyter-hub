@@ -1,5 +1,27 @@
 # Spec 003 — Registro (logs de atividade e relatórios diários)
 
+## Estado atual — 2026-10-26
+
+**Status geral:** PARCIAL — o núcleo de eventos e a centralização em “Meu dia” estão implementados; a validação visual e alguns refinamentos permanecem.
+
+### FEITO
+
+- Eventos de tarefas e alterações relevantes com rótulos em PT-BR.
+- “Meu dia” como entrada única para tarefas, atividade e relatórios.
+- Redirecionamento de `/minhas-tarefas` e `/relatorios` para o contexto de “Meu dia”.
+- Painel visual, relatório narrativo, fechamento do dia, salvamento e rascunho de e-mail.
+- Dados demonstrativos de atividade para usuários de teste.
+
+### EM VALIDAÇÃO
+
+- Teste autenticado completo do painel, relatório, salvamento e rascunho.
+- Conferência de eventos gerados por UI, SQL e MCP sem duplicidade.
+
+### FALTA
+
+- Corrigir qualquer divergência restante entre a experiência visual prevista e a implementação.
+- Completar testes E2E de período, semana/mês, bloqueios, atrasos e preservação de edições manuais.
+
 ## Log automático de atividade
 
 - **FR-003-01**: Toda conclusão de tarefa, mudança de status/posição no kanban, reatribuição, mudança de prazo ou de prioridade, criação, exclusão e comentário DEVE gerar um evento (`evento`, append-only) com: quem, quando (UTC, exibido em America/Cuiaba), tarefa, projeto, contrato, cliente, verbo (`concluiu`, `moveu`, `reatribuiu`, `reagendou`, `repriorizou`, `criou`, `excluiu`, `comentou`), antes/depois (sem campos financeiros) e origem (`ui`, `mcp`, `importador`, `sistema`).

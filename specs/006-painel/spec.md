@@ -1,5 +1,27 @@
 # Spec 006 — Painel
 
+## Estado atual — 2026-10-26
+
+**Status geral:** PARCIAL — o painel e os visuais principais existem, mas ainda há pendências de validação, dados financeiros e acabamento visual.
+
+### FEITO
+
+- KPIs, gráficos de tarefas, prioridades, carga, projetos e contratos.
+- Filtragem cruzada por URL, tabelas alternativas e links para as listas.
+- Mapa dinâmico, roscas, medidor de estresse e composição em mosaico.
+- RLS por papel e ocultação de carga/valores para papéis sem permissão.
+
+### EM VALIDAÇÃO
+
+- Valores financeiros para diretor/consultor após as views financeiras e dados remotos.
+- Console limpo e comportamento do roteador ao aplicar filtros.
+- Composição sem rolagem e sem lacunas nas resoluções previstas.
+
+### FALTA
+
+- Corrigir divergências restantes de carregamento financeiro e mensagens de erro.
+- Finalizar os testes E2E autenticados do painel.
+
 ## Requisitos adicionados
 
 - **FR-006-01**: Página inicial (`/painel`) DEVE exibir gráficos além dos contadores atuais:

@@ -1,5 +1,28 @@
 # Spec 008 — DataWare (grafo da base de dados)
 
+## Estado atual — 2026-10-26
+
+**Status geral:** PARCIAL — grafo visual e integração com pastas/arquivos estão implementados; GraphQL e algumas consultas avançadas ainda não.
+
+### FEITO
+
+- Rota `/dataware`, item na sidebar e grafo interativo somente leitura.
+- Nós, arestas, busca, filtros, vizinhança, painel de detalhes e navegação para os registros.
+- Integração de clientes, contratos, projetos, tarefas, eventos, aprovações, pastas e arquivos.
+- Hierarquia e arquivos da gaveta aparecem como nós ligados ao contexto do cliente.
+- Escape de rótulos e respeito ao escopo da organização na camada de consulta existente.
+
+### EM VALIDAÇÃO
+
+- Desempenho com grande volume de nós e carga progressiva.
+- Cobertura de RLS por papel e navegação de cada tipo de nó.
+
+### FALTA
+
+- Expor o grafo via `pg_graphql`.
+- Implementar ou validar a consulta formal `dw_vizinhanca` no GraphQL.
+- Completar eventos sob demanda e filtros temporais de logs.
+
 Aba `/dataware`: visualização em grafo, estilo Obsidian, de toda a base. Também é a camada de conhecimento que os agentes de IA (spec 004) vão consultar.
 
 ## Modelo do grafo

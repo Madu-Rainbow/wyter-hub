@@ -1,6 +1,33 @@
 # Spec 009 — Correções (bateria de testes)
 
-Documento vivo. Cada item tem estado: **FEITO**, **EM ANDAMENTO** (agente trabalhando) ou **FALTA**. Atualizar a cada rodada.
+Documento vivo. Cada item tem estado: **FEITO**, **EM ANDAMENTO**, **EM VALIDAÇÃO**, **FALTA** ou **ACEITO**. Atualizar a cada rodada.
+
+## Estado consolidado — 2026-10-26
+
+### FEITO desde as baterias anteriores
+
+- Build de produção, TypeScript, Biome nos arquivos alterados e 58 testes unitários passam.
+- Correção do carregamento de “Meu dia” e “Relatórios”.
+- Correção do trigger de modal de tarefas e dos fluxos de criação, comentários e checklist.
+- Login com retenção do e-mail após erro, remoção do grafo da tela de login e rate limit de aplicação.
+- Centralização em “Meu dia”, rótulos de eventos em PT-BR e dados demonstrativos para usuários de teste.
+- Drive geral, gaveta por cliente, hierarquia Cliente → Contrato → Projeto, upload múltiplo, versionamento inicial, preview, download assinado, DataWare e Realtime.
+- MCP remoto, tokens pessoais, auditoria, filtros de privacidade e limite de taxa atômico.
+
+### EM VALIDAÇÃO
+
+- Testes E2E autenticados por papel.
+- Valores financeiros para diretor/consultor no remoto.
+- OAuth do Claude.ai web.
+- Auditoria completa de gaveta, RLS de arquivos e restauração de versões.
+
+### FALTA
+
+- Atualizar os resultados históricos da Bateria 2 depois de repetir os fluxos corrigidos.
+- Resolver pendências ainda abertas nas tabelas de defeitos abaixo, sem reabrir itens já marcados como FEITO.
+- Registrar evidência de cada correção com comando, data e rota testada.
+
+> **Nota de leitura:** as tabelas das seções seguintes preservam os resultados históricos das baterias anteriores. Quando uma tabela disser `FALTA`, isso representa o estado no momento daquela bateria; o estado vigente é o resumo consolidado acima e a atualização deve ser feita após nova execução do teste.
 
 Bateria 1 (2026-10-24, sem sessão logada): `tsc`, `vitest`, `biome`, fumaça de rotas (`curl`), revisão automática de segurança dos commits e relatórios dos agentes. **Limite**: nenhuma tela foi aberta logada, então nada visual ou de fluxo foi validado em execução. Bateria 2 (a fazer) exige sessão logada (Playwright com login por e-mail e senha).
 

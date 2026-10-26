@@ -1,5 +1,27 @@
 # Spec 004 — Ponte Claude (servidor MCP remoto)
 
+## Estado atual — 2026-10-26
+
+**Status geral:** PARCIAL — MCP remoto e tela de tokens estão implementados; integração completa com clientes Claude ainda precisa de validação.
+
+### FEITO
+
+- Edge Function MCP remota publicada com autenticação por token pessoal.
+- `initialize`, `tools/list`, `tools/call`, resources, prompts, auditoria e filtros de privacidade implementados.
+- Escopos de leitura/escrita, revogação, expiração e limite de taxa atômico.
+- Tela `/perfil/claude` com criação, exibição única, cópia, comandos de conexão e revogação.
+- Testes básicos de token inválido, `initialize`, `tools/list`, consultas e revogação.
+
+### EM VALIDAÇÃO
+
+- Teste de escrita com token real e confirmação do fluxo `generateLink`/`verifyOtp` no projeto remoto.
+- Conferência ponta a ponta da mesma RLS da interface em cada papel.
+
+### FALTA
+
+- OAuth oficial para Claude.ai web.
+- Ferramentas de escrita do dossiê, rotação automática de tokens e limite por IP.
+
 Os consultores usam o Claude (Claude Code e Claude.ai/desktop) conectado ao Wyter Hub por um servidor MCP remoto, rodando como Edge Function do Supabase (`supabase/functions/mcp`). O Claude consulta e atualiza o Hub com as MESMAS permissões do usuário que o conectou.
 
 ## Transporte
@@ -59,7 +81,7 @@ Os consultores usam o Claude (Claude Code e Claude.ai/desktop) conectado ao Wyte
 5. Nenhuma resposta contém valores em R$, CPF/CNPJ ou campos de `dado_sensivel`.
 6. Cada chamada aparece em `evento` com origem `mcp`, sem argumentos.
 
-## Estado: feito / falta
+## Histórico de implementação e pendências específicas
 
 - FEITO: spec, migration 000040 aplicada, função `mcp` implantada (401 e OPTIONS verificados no remoto), tela. FALTA: teste `tools/list`/`tools/call` com token real e confirmar que `generateLink`+`verifyOtp` funciona neste projeto (se falhar, fallback seria service_role com checagem por ferramenta).
 - Detalhe original: spec, tabela `token_mcp`, RPCs, função `mcp`, tela `/perfil/claude`: ver commits `feat(mcp)`/`feat(db)`.

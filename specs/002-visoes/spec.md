@@ -1,5 +1,27 @@
 # Spec 002 — Visões, Navegação e Tarefas
 
+## Estado atual — 2026-10-26
+
+**Status geral:** PARCIAL — a área de trabalho e os fluxos principais existem; ainda há pendências de acabamento, filtros e validação por papel.
+
+### FEITO
+
+- Sidebar, navegação principal e área unificada `/trabalho` com árvore Cliente → Contrato → Projeto.
+- Visões Kanban, Lista, Tabela e Gantt, criação/edição de tarefas, subtarefas, checklist, comentários e atividade.
+- Combobox pesquisável, botões padronizados, diálogos próprios e redirecionamentos das rotas antigas.
+- Filtros principais, progresso de projetos, criação sem projeto e correções recentes do Gantt.
+
+### EM VALIDAÇÃO
+
+- Layout em todas as resoluções e persistência da sidebar após sair e entrar novamente.
+- Fluxo completo com todos os papéis e execução das ações de escrita em sessão autenticada.
+
+### FALTA
+
+- Concluir filtros avançados de `/minhas-tarefas` e `/trabalho`.
+- Corrigir ou validar os itens restantes de Gantt, agrupamentos, pesquisa e movimentação.
+- Cobrir visualmente as telas com testes E2E autenticados.
+
 Referência de funcionamento: Trello (kanban), Jira (tabela, filtros, atividade), ClickUp (lista agrupada, visões alternáveis).
 
 ## Navegação e perfil
