@@ -9,9 +9,12 @@ import { z } from "zod";
 const schema = z.object({ email: z.string().trim().email(), senha: z.string().min(1) });
 const BLOQUEIO = { erro: "Muitas tentativas. Tente novamente em alguns minutos." };
 
-export async function entrar(_prev: { erro: string }, form: FormData): Promise<{ erro: string }> {
-  const parsed = schema.safeParse({ email: form.get("email"), senha: form.get("senha") });
-  const generico = { erro: "E-mail ou senha inválidos" };
+export type EstadoLogin = { erro: string; email?: string };
+
+export async function entrar(_prev: EstadoLogin, form: FormData): Promise<EstadoLogin> {
+  const emailInformado = String(form.get("email") ?? "").trim();
+  const generico = { erro: "E-mail ou senha inválidos", email: emailInformado };
+  const parsed = schema.safeParse({ email: emailInformado, senha: form.get("senha") });
   if (!parsed.success) return generico;
 
   const email = normalizarEmail(parsed.data.email);
@@ -30,21 +33,21 @@ export async function entrar(_prev: { erro: string }, form: FormData): Promise<{
     args: Record<string, unknown>,
   ) => Promise<{ data: unknown; error: unknown }>;
   const segredo = process.env.LOGIN_RL_SECRET ?? "";
-  if (!segredo) return BLOQUEIO; // falha fechada
+  if (!segredo) return { ...BLOQUEIO, email };
   const { data: espera, error: errChecar } = await rpc("login_tentar", {
     p_email: email,
     p_ip: ip,
     p_segredo: segredo,
   });
   // falha fechada: sem o controle, não deixa tentar senha
-  if (errChecar || Number(espera ?? 0) > 0) return BLOQUEIO;
+  if (errChecar || Number(espera ?? 0) > 0) return { ...BLOQUEIO, email };
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password: parsed.data.senha,
   });
   if (!error) await rpc("login_sucesso", { p_email: email, p_ip: ip, p_segredo: segredo });
-  if (error) return error.status === 429 ? BLOQUEIO : generico;
+  if (error) return error.status === 429 ? { ...BLOQUEIO, email } : generico;
 
   redirect("/painel");
 }
