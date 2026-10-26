@@ -23,7 +23,8 @@ O log é a fonte, não o produto: "Meu dia" e o relatório diário NÃO podem se
 - **FR-003-11**: **Relatório narrativo gerado** (não só eventos): texto em PT-BR em prosa e tópicos, por cliente, com seções Resumo do dia, Entregas, Em andamento, Bloqueios e riscos, Próximos passos e Observações, composto a partir de `evento` + `tarefa` + descrição + checklist + comentários do dia + prazos próximos; frases naturais ("Concluí a revisão do contrato X, que destravou Y"), agrupando eventos repetidos da mesma tarefa em uma frase só. Gerado por regras determinísticas agora, com ponto de extensão para um agente de IA (spec 004) reescrever o texto; antes de qualquer envio a IA, mascarar dados sensíveis e valores.
 - **FR-003-12**: Editor do relatório lado a lado com pré-visualização; botões Regenerar (preserva edições manuais por seção), Salvar no registro diário, Copiar, Baixar PDF e Criar rascunho de e-mail (nunca envia automaticamente). Escolher quais clientes entram.
 - **FR-003-13**: Visões Dia / Semana / Mês: semana e mês geram relatório consolidado com tendências (entregas por dia, clientes mais atendidos) e destaques.
-- **FR-003-14**: Item "Relatórios" na barra lateral para diretor/consultor; relatório por cliente tem o mesmo formato visual e narrativo, com seletor de período.
+- **FR-003-14**: "Meu dia" é a entrada única para tarefas pessoais, atividade registrada e criação de relatórios. As rotas antigas `/minhas-tarefas` e `/relatorios` devem redirecionar para a visão correspondente de `/meu-dia`, preservando links existentes sem manter telas duplicadas.
+- **FR-003-15**: A visão "Meu dia" deve permitir alternar entre painel de tarefas/atividade e editor de relatório no mesmo contexto de pessoa e período, sem exigir troca de módulo.
 
 ## Critérios de aceite
 

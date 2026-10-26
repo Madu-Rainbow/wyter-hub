@@ -208,7 +208,7 @@ async function relatorioDiario(ctx: Ctx, dia: string, clienteId?: string) {
 export const tools: Tool[] = [
   {
     name: "buscar",
-    description: "Busca por texto livre em clientes, contratos, projetos, tarefas e pessoas visiveis ao usuario. Use para localizar ids antes de chamar outras ferramentas.",
+    description: "Busca por texto livre em clientes, contratos, projetos, tarefas e pessoas visiveis ao usuario. Use para localizar ids antes de chamar outras ferramentas. Exemplo: {\"consulta\": \"Pao\"}.",
     schema: z.object({
       consulta: z.string().min(2).max(200).describe("Texto a procurar"),
       tipos: z.array(z.enum(["cliente", "contrato", "projeto", "tarefa", "pessoa"])).optional().describe("Restringe os tipos (padrao: todos)"),

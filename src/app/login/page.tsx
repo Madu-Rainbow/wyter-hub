@@ -87,10 +87,58 @@ function LoginForm() {
 
 function LoginShell({ children }: { children?: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg">
-      <div className="w-full max-w-sm rounded-md border border-border bg-surface p-8">
-        {children}
-      </div>
+    <div className="grid min-h-screen bg-bg lg:grid-cols-[minmax(0,1fr)_26rem]">
+      <section className="relative hidden overflow-hidden border-r border-border bg-[#0e1726] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="relative z-10 max-w-xl">
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-white/60">
+            Wyter Consultoria
+          </p>
+          <h1 className="max-w-lg font-title text-4xl leading-tight">
+            Gestão orientada a dados para decisões que movem o negócio.
+          </h1>
+          <p className="mt-4 max-w-md text-sm leading-6 text-white/70">
+            Conectamos contexto, trabalho e resultado em uma visão única para a equipe.
+          </p>
+        </div>
+        <div
+          className="relative mx-auto h-72 w-full max-w-2xl [perspective:900px]"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-8 rotate-x-[58deg] rotate-z-[-18deg] border border-white/15 [transform-style:preserve-3d]">
+            {Array.from({ length: 12 }, (_, i) => `node-${i}`).map((key, i) => (
+              <span
+                key={key}
+                className="absolute size-2 rounded-full bg-[#8fb8e8] shadow-[0_0_18px_#8fb8e8]"
+                style={{
+                  left: `${12 + ((i * 29) % 76)}%`,
+                  top: `${10 + ((i * 47) % 72)}%`,
+                  transform: `translateZ(${(i % 4) * 24}px)`,
+                }}
+              />
+            ))}
+            {Array.from({ length: 7 }, (_, i) => `line-${i}`).map((key, i) => (
+              <span
+                key={key}
+                className="absolute h-px origin-left bg-white/25"
+                style={{
+                  left: `${12 + ((i * 23) % 52)}%`,
+                  top: `${18 + ((i * 31) % 54)}%`,
+                  width: `${18 + (i % 3) * 9}%`,
+                  transform: `rotate(${18 + i * 19}deg) translateZ(${(i % 3) * 18}px)`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+        <p className="relative z-10 text-xs text-white/45">
+          Visualização demonstrativa · dados fictícios
+        </p>
+      </section>
+      <section className="flex min-h-screen items-center justify-center px-6 py-10 lg:px-10">
+        <div className="w-full max-w-sm rounded-md border border-border bg-surface p-8">
+          {children}
+        </div>
+      </section>
     </div>
   );
 }

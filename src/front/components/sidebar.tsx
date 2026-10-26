@@ -6,8 +6,6 @@ import { TooltipProvider } from "@front/components/ui/tooltip";
 import {
   Building2,
   CalendarCheck,
-  CheckSquare,
-  FileText,
   FolderKanban,
   LayoutDashboard,
   LogOut,
@@ -25,19 +23,8 @@ type NavItem = { href: string; label: string; icon: React.ReactNode; gestor?: bo
 
 const navItems: NavItem[] = [
   { href: "/painel", label: "Painel", icon: <LayoutDashboard className="size-4 shrink-0" /> },
-  {
-    href: "/minhas-tarefas",
-    label: "Minhas tarefas",
-    icon: <CheckSquare className="size-4 shrink-0" />,
-  },
   { href: "/meu-dia", label: "Meu dia", icon: <CalendarCheck className="size-4 shrink-0" /> },
   { href: "/trabalho", label: "Trabalho", icon: <FolderKanban className="size-4 shrink-0" /> },
-  {
-    href: "/relatorios",
-    label: "Relatórios",
-    icon: <FileText className="size-4 shrink-0" />,
-    gestor: true,
-  },
   { href: "/clientes", label: "Clientes", icon: <Building2 className="size-4 shrink-0" /> },
   { href: "/equipe", label: "Equipe", icon: <Users className="size-4 shrink-0" /> },
   { href: "/dataware", label: "DataWare", icon: <Network className="size-4 shrink-0" /> },
