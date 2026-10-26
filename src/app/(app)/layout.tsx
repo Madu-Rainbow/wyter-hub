@@ -1,4 +1,5 @@
 import { MobileSidebar } from "@front/components/mobile-sidebar";
+import { RealtimeProvider } from "@front/components/realtime-provider";
 import { Sidebar } from "@front/components/sidebar";
 import { createSupabaseServer } from "@front/lib/supabase/server";
 import type { AppRole } from "@shared/types/index";
@@ -14,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: pessoa } = await supabase
     .from("pessoa")
-    .select("nome, papel")
+    .select("id, nome, papel, org_id")
     .eq("auth_user_id", user.id)
     .eq("ativo", true)
     .is("deleted_at", null)
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Sidebar userName={userName} userRole={userRole} initialCollapsed={collapsed} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+        <RealtimeProvider orgId={pessoa.org_id} />
         <header className="flex h-14 shrink-0 items-center border-b border-border bg-surface px-4 lg:hidden">
           <MobileSidebar userName={userName} userRole={userRole} />
           <span className="ml-2 font-title text-lg text-text">Wyter Hub</span>
