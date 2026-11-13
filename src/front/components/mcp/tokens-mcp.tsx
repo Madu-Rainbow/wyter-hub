@@ -13,7 +13,7 @@ type Token = {
   nome: string;
   prefixo: string;
   escopo: string;
-  expira_em: string;
+  expira_em: string | null;
   ultimo_uso_em: string | null;
   revogado_em: string | null;
   created_at: string;
@@ -54,7 +54,6 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [escopo, setEscopo] = useState<"leitura" | "escrita">("leitura");
-  const [dias, setDias] = useState(90);
   const [novo, setNovo] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -66,7 +65,6 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
     const { data, error } = await createClient().rpc("criar_token_mcp", {
       p_nome: nome,
       p_escopo: escopo,
-      p_dias: dias,
     });
     setOcupado(false);
     if (error || !data) return setErro(error?.message ?? "Não foi possível criar o token.");
@@ -82,14 +80,14 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
     router.refresh();
   }
 
-  const cmd = `claude mcp add --transport http wyter-hub ${url} --header "Authorization: Bearer ${novo ?? "<TOKEN>"}"`;
+  const cmd = `claude mcp add --transport http wyter-hub ${url} --header "Authorization: Bearer <TOKEN>"`;
   const cfg = JSON.stringify(
     {
       mcpServers: {
         "wyter-hub": {
           type: "http",
           url,
-          headers: { Authorization: `Bearer ${novo ?? "<TOKEN>"}` },
+          headers: { Authorization: "Bearer <TOKEN>" },
         },
       },
     },
@@ -101,7 +99,7 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
     <div className="space-y-6">
       <form onSubmit={criar} className="space-y-4 rounded-md border border-border bg-surface p-4">
         <h2 className="font-title text-lg text-text">Novo token</h2>
-        <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+        <div>
           <div className="space-y-1">
             <Label htmlFor="nome">Nome</Label>
             <Input
@@ -110,18 +108,6 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
               onChange={(e) => setNome(e.target.value)}
               placeholder="Ex.: Claude Code no notebook"
               maxLength={80}
-              required
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="dias">Validade (dias)</Label>
-            <Input
-              id="dias"
-              type="number"
-              min={1}
-              max={365}
-              value={dias}
-              onChange={(e) => setDias(Number(e.target.value))}
               required
             />
           </div>
@@ -181,7 +167,7 @@ export function TokensMcp({ tokens, url }: { tokens: Token[]; url: string }) {
         ) : (
           <ul className="divide-y divide-border rounded-md border border-border bg-surface">
             {tokens.map((t) => {
-              const vencido = new Date(t.expira_em) < new Date();
+              const vencido = t.expira_em !== null && new Date(t.expira_em) < new Date();
               const situacao = t.revogado_em ? "revogado" : vencido ? "expirado" : "ativo";
               return (
                 <li key={t.id} className="flex items-center justify-between gap-3 p-3 text-sm">

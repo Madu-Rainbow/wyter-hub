@@ -52,3 +52,10 @@ playwright-report/
 
 # Gerado localmente com o hash do segredo do login (nao versionar)
 supabase/migrations/*_login_segredo_local.sql
+.vercel
+.env*
+!.env.example
+
+# Artefatos locais de navegador/sessao (nao versionar)
+.playwright-mcp/
+.session-backup/

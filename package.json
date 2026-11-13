@@ -16,9 +16,8 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx src/back/db/seeds/index.ts",
     "db:studio": "drizzle-kit studio",
-    "prepare": "lefthook install"
+    "prepare": "if [ -d .git ]; then lefthook install; fi"
   },
   "author": "Wyter Consultoria",
   "license": "UNLICENSED",

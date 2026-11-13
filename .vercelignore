@@ -1,0 +1,22 @@
+# Pacote local gerado para a Hostinger
+hostinger/
+
+# Build e dependências
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+
+# Segredos — nunca subir para a Vercel
+.env
+.env.*
+!.env.example
+
+# Artefatos de desenvolvimento
+.playwright-mcp/
+.session-backup/
+docs/
+specs/
+tests/
+test-results/
+playwright-report/
+.supabase/

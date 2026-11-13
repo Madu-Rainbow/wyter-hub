@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wyter Hub — Visão do sistema</title>
+    <style>
+      :root {
+        --ink: #0e1726;
+        --muted: #667085;
+        --paper: #f7f7f5;
+        --line: #d9dde5;
+        --navy: #1d3152;
+        --white: #fff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font: 16px/1.55 Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      main { max-width: 1180px; margin: 0 auto; padding: 56px 28px 90px; }
+      .hero {
+        min-height: 390px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 56px;
+        color: var(--white);
+        background: var(--navy);
+        border-radius: 18px;
+      }
+      .eyebrow { margin: 0 0 12px; color: #b9c7db; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+      h1, h2 { font-family: Georgia, serif; font-weight: 500; line-height: 1.1; }
+      h1 { max-width: 720px; margin: 0; font-size: clamp(42px, 7vw, 76px); }
+      .hero p { max-width: 650px; margin: 24px 0 0; color: #e3e8f0; font-size: 19px; }
+      .intro { max-width: 760px; margin: 72px 0 36px; }
+      h2 { margin: 0 0 14px; font-size: 34px; }
+      .intro p { color: var(--muted); font-size: 18px; }
+      .chapter { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; margin: 52px 0; }
+      .chapter:nth-of-type(even) .shot { order: 2; }
+      .shot { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--white); box-shadow: 0 14px 35px #0e17260f; }
+      .shot img { display: block; width: 100%; height: auto; }
+      .copy { padding: 10px 24px; }
+      .number { color: var(--navy); font-size: 13px; font-weight: 800; letter-spacing: .1em; }
+      h3 { margin: 8px 0 12px; font-family: Georgia, serif; font-size: 30px; font-weight: 500; }
+      .copy p { margin: 0; color: var(--muted); font-size: 17px; }
+      .value { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink); font-size: 14px; }
+      footer { margin-top: 76px; padding: 28px 0 0; border-top: 1px solid var(--line); color: var(--muted); }
+      @media (max-width: 760px) {
+        main { padding: 20px 14px 60px; }
+        .hero { min-height: 340px; padding: 30px; }
+        .chapter, .chapter:nth-of-type(even) { display: flex; flex-direction: column; align-items: stretch; margin: 40px 0; }
+        .chapter:nth-of-type(even) .shot { order: 0; }
+        .copy { padding: 4px 8px; }
+      }
+      @media print {
+        body { background: #fff; }
+        main { max-width: none; padding: 0; }
+        .hero { min-height: 250px; border-radius: 0; }
+        .chapter { break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">Wyter Consultoria · visão do produto</p>
+        <h1>Uma operação inteira em um só lugar.</h1>
+        <p>O Wyter Hub conecta estratégia, clientes, contratos, projetos, tarefas, documentos, indicadores e inteligência para transformar trabalho espalhado em uma operação visível.</p>
+      </header>
+
+      <section class="intro">
+        <h2>Como a equipe trabalha no Hub</h2>
+        <p>Esta coletânea apresenta a jornada principal do sistema em funcionamento: acompanhar a operação, executar o trabalho, entender cada cliente, conectar os dados e ampliar a produtividade com Claude. As capturas desta rodada foram feitas no ambiente autenticado em 25/10/2026.</p>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./01-painel-gerencial.png" alt="Painel gerencial do Wyter Hub" /></div>
+        <div class="copy"><div class="number">01 · ORIENTAÇÃO</div><h3>Painel gerencial</h3><p>A direção começa pelo panorama: indicadores, andamento dos projetos, carga da equipe, mapa de clientes e sinais que pedem decisão.</p><p class="value"><strong>Valor para a gestão:</strong> menos tempo consolidando informação e mais tempo decidindo com contexto.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./02-tarefas.png" alt="Área de tarefas" /></div>
+        <div class="copy"><div class="number">02 · CONTEXTO</div><h3>Trabalho organizado</h3><p>Clientes, contratos, projetos e tarefas passam a fazer parte de uma mesma estrutura, sem áreas soltas nem informação duplicada.</p><p class="value"><strong>Valor para a equipe:</strong> cada pessoa entende o que precisa ser feito e por que aquilo importa.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./03-kanban.png" alt="Quadro Kanban" /></div>
+        <div class="copy"><div class="number">03 · EXECUÇÃO</div><h3>Fluxo visual</h3><p>O Kanban mostra o trabalho em movimento: o que está para começar, em andamento, bloqueado ou concluído.</p><p class="value"><strong>Valor para o cliente:</strong> mais previsibilidade sobre o avanço das entregas.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./05-gantt.png" alt="Planejamento Gantt" /></div>
+        <div class="copy"><div class="number">04 · PLANEJAMENTO</div><h3>Prazo e dependências</h3><p>O Gantt transforma tarefas em um plano de entrega, revelando prazos, marcos, atrasos e dependências entre atividades.</p><p class="value"><strong>Valor para a operação:</strong> antecipar conflitos antes que virem atraso.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./06-detalhe-tarefa.png" alt="Detalhe de uma tarefa" /></div>
+        <div class="copy"><div class="number">05 · COLABORAÇÃO</div><h3>Uma tarefa com memória</h3><p>Descrição, checklist, responsáveis, comentários, anexos e histórico ficam reunidos no mesmo lugar.</p><p class="value"><strong>Valor para a consultoria:</strong> o conhecimento não fica perdido em conversas ou caixas de entrada.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./07-dossie-cliente.png" alt="Dossiê do cliente" /></div>
+        <div class="copy"><div class="number">06 · RELACIONAMENTO</div><h3>Dossiê do cliente</h3><p>O contexto estratégico de cada cliente acompanha a execução: fatos, decisões, contatos, restrições e histórico.</p><p class="value"><strong>Valor para o atendimento:</strong> qualquer pessoa autorizada consegue retomar a história sem recomeçar do zero.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./08-dataware.png" alt="DataWare conectado" /></div>
+        <div class="copy"><div class="number">07 · CONEXÃO</div><h3>DataWare</h3><p>Os dados deixam de ser ilhas. Relações entre clientes, contratos, projetos, tarefas e documentos ficam visíveis para consulta.</p><p class="value"><strong>Valor para a IA:</strong> o DataWare fornece mais contexto ao Claude, conectando fatos, documentos, projetos e histórico para respostas mais completas e úteis.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./09-usuarios.png" alt="Gestão de usuários" /></div>
+        <div class="copy"><div class="number">08 · GOVERNANÇA</div><h3>Acesso na medida certa</h3><p>Papéis e permissões garantem que cada pessoa veja e altere somente o que precisa para trabalhar.</p><p class="value"><strong>Valor para a direção:</strong> crescimento com controle, rastreabilidade e segurança.</p></div>
+      </section>
+
+      <section class="chapter">
+        <div class="shot"><img src="./10-ponte-claude-atualizada.png" alt="Integração com Claude" /></div>
+        <div class="copy"><div class="number">09 · INTELIGÊNCIA</div><h3>Claude.ai conectado ao contexto</h3><p>A área visual do MCP prioriza a conexão com o Claude.ai comum pelo chat, com autorização OAuth, permissões por papel e proteção por RLS. A ponte permite consultar o Hub com as mesmas permissões do usuário, sem expor dados financeiros ou sensíveis; clientes técnicos ficam como alternativa.</p><p class="value"><strong>Valor para os consultores:</strong> transformar dados organizados em preparação, síntese e ação.</p></div>
+      </section>
+
+      <footer><strong>Wyter Hub</strong> · menos ferramentas fragmentadas, mais clareza para executar a consultoria.</footer>
+    </main>
+  </body>
+</html>
